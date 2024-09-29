@@ -1,0 +1,52 @@
+name: Build APK/AAB (Upload - Create Artifact To GitHub Action)
+
+on:
+  # Triggers the workflow on push to the main branch
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code
+      - name : Checkout
+        uses: actions/checkout@v3
+
+      # Set Up JDK
+      - name: Set Up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu' # Supported distributions
+          java-version: '17'
+          cache: 'gradle'
+
+      # Change Gradle wrapper permissions
+      - name: Change Gradle Wrapper Permissions
+        run: chmod +x ./gradlew
+
+      # Run Build Project
+      - name: Build Gradle Project
+        run: ./gradlew build
+
+      # Create APK Debug
+      - name: Build APK Debug
+        run: ./gradlew assembleDebug
+
+      # Create APK Release
+      - name: Build APK Release
+        run: ./gradlew assembleRelease
+
+      # Create Bundle AAB Release
+      - name: Build App Bundle Release (AAB)
+        run: ./gradlew app:bundleRelease
+
+      # Upload Artifact Build
+      # Upload Debug APK
+      - name: Upload APK Debug
+        uses: actions/upload-artifact@v3
+        with:
+          name: APK(s) debug generated
+          path: app/build/outputs/apk/debug/app-debug.apk
