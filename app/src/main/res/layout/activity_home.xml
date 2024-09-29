@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/material_background"
     tools:context=".HomeActivity">
 
 
@@ -208,7 +208,7 @@
                         android:backgroundTint="@color/black"
                         android:paddingHorizontal="16dp"
                         android:paddingVertical="8dp"
-                        android:text="@string/_20ml"
+                        android:text="@string/_200ml"
                         android:textColor="@color/white"
                         app:cornerRadius="8dp" />
 

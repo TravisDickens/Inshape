@@ -71,7 +71,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
         // Add 20ml when button is clicked
         binding.addWaterButton.setOnClickListener {
-            updateWaterIntake(20)
+            updateWaterIntake(200)
         }
 
         binding.cardCalorieIntake.setOnClickListener {
@@ -171,7 +171,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
         val dailyDataRef = database.child("dailyData").child(currentDate)
 
         // Fetch steps and calories
-        dailyDataRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        dailyDataRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     // Load steps
@@ -399,7 +399,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
             val userGoalsRef = database.child("goals")
 
             // Fetch water goal from Firebase
-            userGoalsRef.child("waterGoal").addListenerForSingleValueEvent(object : ValueEventListener {
+            userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000
 
@@ -438,7 +438,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
             val userGoalsRef = database.child("goals")
 
             // Fetch water goal again (if needed)
-            userGoalsRef.child("waterGoal").addListenerForSingleValueEvent(object : ValueEventListener {
+            userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000
 
@@ -476,7 +476,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
             val userNutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
 
             // Fetch calorie goal first
-            userGoalsRef.child("calorieGoal").addListenerForSingleValueEvent(object : ValueEventListener {
+            userGoalsRef.child("calorieGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val dailyCalorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 2500.0
 
@@ -525,9 +525,9 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
         if (currentUser != null) {
             val userGoalsRef = database.child("goals")
-            userGoalsRef.child("stepGoal").addListenerForSingleValueEvent(object : ValueEventListener {
+            userGoalsRef.child("stepGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val stepGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 10000
+                    val stepGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
                     binding.circularProgressBar.progressMax = stepGoal.toFloat() // Set the max value of the progress bar
 
                     // Since stepsTaken is loaded from Firebase, set the progress accordingly

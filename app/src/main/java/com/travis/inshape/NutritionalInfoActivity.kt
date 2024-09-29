@@ -1,5 +1,6 @@
 package com.travis.inshape
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -105,6 +106,12 @@ class NutritionalInfoActivity : AppCompatActivity() {
         userRef.child(mealType).push().setValue(nutritionalData).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(this, "Data saved successfully", Toast.LENGTH_SHORT).show()
+
+                // Redirect to HomeActivity
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+                finish()
             } else {
                 Toast.makeText(this, "Failed to save data", Toast.LENGTH_SHORT).show()
             }
