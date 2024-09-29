@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">INSHAPE</string>
+    <string name="welcome">Welcome</string>
+    <string name="please_login_with_your_information">Please login with your information</string>
+    <string name="or_sign_up_with">Or sign up with</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="login_with_biometrics">Login with Biometrics</string>
+    <string name="don_t_have_an_account_sign_up">Don\'t have an account? Sign up</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_an_account">Create an Account</string>
+    <string name="please_register_with_your_information">Please register with your information</string>
+    <string name="register">Register</string>
+    <string name="already_have_an_account_login">Already have an account? Login</string>
+    <string name="default_web_client_id">624563920991-26sirjhdibaaha2h4i2g9klau0o9lt7m.apps.googleusercontent.com</string>
+</resources>

@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".NutritionDetails">
+
+    <!-- AppBar / Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/white"
+            app:title="Daily Nutrient Intake Summary"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+            android:background="@color/purple_500"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content Layout -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <!-- Calories Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/calories_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Nutrient Label and Value -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/calories_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Calories"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/calories_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 kcal"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <!-- Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/calories_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="2500"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/purple_500"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <!-- Recommendation Text -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/calories_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Goal: 2500 kcal"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Carbohydrates Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/carbohydrates_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/carbohydrates_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Carbohydrates"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/carbohydrates_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 g"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/carb_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="300"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/green"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/carb_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recommended: 300 g"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Fat Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fat_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/fat_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Fat"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/fat_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 g"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/fat_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="70"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/orange"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/fat_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recommended: 70 g"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Protein Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/protein_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/protein_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Protein"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/protein_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 g"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/protein_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="50"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/purple_500"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/protein_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recommended: 50 g"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Fiber Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/fiber_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/fiber_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Fiber"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/fiber_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 g"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/fiber_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="30"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/red"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/fiber_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recommended: 30 g"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Sugars Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/sugars_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="6dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@color/gray_light"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/sugars_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Sugars"
+                            android:textSize="18sp"
+                            android:textColor="@color/black"/>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/sugars_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 g"
+                            android:textSize="18sp"
+                            android:textColor="@color/black" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/sugars_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:max="50"
+                        android:progress="0"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:progressTint="@color/red"
+                        android:backgroundTint="@color/progressBarBackground" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/sugars_recommendation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recommended: 50 g"
+                        android:textSize="16sp"
+                        android:textColor="@color/secondaryTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

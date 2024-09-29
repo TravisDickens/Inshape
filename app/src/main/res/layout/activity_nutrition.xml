@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".NutritionActivity">
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/white"
+            app:title="Enter Food"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+            android:background="@color/purple_500"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Search Bar with Enhanced Design -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/search_food_input_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/appBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/black"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/search"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:elevation="4dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/search_food_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search for food"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:paddingVertical="12dp"
+            android:paddingHorizontal="20dp"
+            android:textSize="16sp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Meal Type Dropdown -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/meal_type_input_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/search_food_input_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/my_primary"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        android:elevation="4dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/meal_type_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="Select meal type"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Meal Time Picker -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/meal_time_input_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/meal_type_input_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeColor="@color/my_primary"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        android:elevation="4dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/meal_time_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="false"
+            android:hint="Select meal time"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- MaterialCardView with content -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/meal_time_input_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/grams_number_picker"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="16dp"
+        android:padding="16dp">
+
+        <!-- Additional content can go here -->
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Grams Input (Number Picker) -->
+    <android.widget.NumberPicker
+        android:id="@+id/grams_number_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/card_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
+        android:elevation="8dp"/>
+
+    <!-- Save Button with Rounded Corners and Elevation -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/save_calories_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/black"
+        android:layout_marginTop="24dp"
+        android:paddingVertical="12dp"
+        android:paddingHorizontal="36dp"
+        android:elevation="6dp"
+        app:cornerRadius="16dp"
+        app:layout_constraintTop_toBottomOf="@id/grams_number_picker"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
