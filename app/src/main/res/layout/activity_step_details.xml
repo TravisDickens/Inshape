@@ -52,7 +52,7 @@
                 android:id="@+id/totalStepsTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Total Steps"
+                android:text="@string/total_steps"
                 android:textStyle="bold"
                 android:textSize="20sp"
                 android:textColor="@color/white" />
@@ -61,7 +61,7 @@
                 android:id="@+id/totalSteps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
+                android:text="@string/_0"
                 android:textStyle="bold"
                 android:textSize="36sp"
                 android:textColor="@color/white" />
@@ -70,7 +70,7 @@
                 android:id="@+id/stepsDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Keep moving to achieve your goal!"
+                android:text="@string/keep_moving_to_achieve_your_goal"
                 android:textSize="14sp"
                 android:textColor="@color/white"
                 android:layout_marginTop="8dp" />
@@ -110,19 +110,19 @@
             android:id="@+id/tabDay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Day" />
+            android:text="@string/day" />
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/tabWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Week" />
+            android:text="@string/week" />
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/tabMonth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Month" />
+            android:text="@string/month" />
 
 
     </com.google.android.material.tabs.TabLayout>

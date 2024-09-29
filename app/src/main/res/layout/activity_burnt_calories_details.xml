@@ -50,7 +50,7 @@
                 android:id="@+id/totalCaloriesTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Calories Burned"
+                android:text="@string/calories_burned"
                 android:textStyle="bold"
                 android:textSize="20sp"
                 android:textColor="@color/white" />
@@ -59,7 +59,7 @@
                 android:id="@+id/totalCalories"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 Kcal"
+                android:text="@string/_0_kcal"
                 android:textStyle="bold"
                 android:textSize="36sp"
                 android:textColor="@color/white" />
@@ -68,7 +68,7 @@
                 android:id="@+id/caloriesDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Great job keeping active!"
+                android:text="@string/great_job_keeping_active"
                 android:textSize="14sp"
                 android:textColor="@color/white"
                 android:layout_marginTop="8dp" />
@@ -106,19 +106,19 @@
             android:id="@+id/tabDay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Day" />
+            android:text="@string/day" />
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/tabWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Week" />
+            android:text="@string/week" />
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/tabMonth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Month" />
+            android:text="@string/month" />
     </com.google.android.material.tabs.TabLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

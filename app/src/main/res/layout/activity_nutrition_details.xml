@@ -71,7 +71,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Calories"
+                            android:text="@string/calories"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -79,7 +79,7 @@
                             android:id="@+id/calories_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 kcal"
+                            android:text="@string/_0_kcal"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -102,7 +102,7 @@
                         android:id="@+id/calories_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Goal: 2500 kcal"
+                        android:text="@string/goal_2500_kcal"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor" />
                 </LinearLayout>
@@ -137,7 +137,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Carbohydrates"
+                            android:text="@string/carbohydrates"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -145,7 +145,7 @@
                             android:id="@+id/carbohydrates_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 g"
+                            android:text="@string/_0_g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -166,7 +166,7 @@
                         android:id="@+id/carb_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Recommended: 300 g"
+                        android:text="@string/recommended_300_g"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor"/>
                 </LinearLayout>
@@ -201,7 +201,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Fat"
+                            android:text="@string/fat"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -209,7 +209,7 @@
                             android:id="@+id/fat_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 g"
+                            android:text="@string/_0_g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -230,7 +230,7 @@
                         android:id="@+id/fat_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Recommended: 70 g"
+                        android:text="@string/recommended_70_g"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor" />
                 </LinearLayout>
@@ -265,7 +265,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Protein"
+                            android:text="@string/protein"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -273,7 +273,7 @@
                             android:id="@+id/protein_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 g"
+                            android:text="@string/_0_g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -294,7 +294,7 @@
                         android:id="@+id/protein_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Recommended: 50 g"
+                        android:text="@string/recommended_50_g"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor" />
                 </LinearLayout>
@@ -329,7 +329,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Fiber"
+                            android:text="@string/fibre"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -337,7 +337,7 @@
                             android:id="@+id/fiber_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 g"
+                            android:text="@string/_0_g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -358,7 +358,7 @@
                         android:id="@+id/fiber_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Recommended: 30 g"
+                        android:text="@string/recommended_30_g"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor" />
                 </LinearLayout>
@@ -393,7 +393,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Sugars"
+                            android:text="@string/sugars"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
 
@@ -401,7 +401,7 @@
                             android:id="@+id/sugars_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 g"
+                            android:text="@string/_0_g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -422,7 +422,7 @@
                         android:id="@+id/sugars_recommendation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Recommended: 50 g"
+                        android:text="@string/recommended_50_g"
                         android:textSize="16sp"
                         android:textColor="@color/secondaryTextColor" />
                 </LinearLayout>

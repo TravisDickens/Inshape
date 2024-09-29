@@ -18,9 +18,9 @@ import kotlinx.coroutines.launch
 
 class NutritionActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityNutritionBinding
+    lateinit var binding: ActivityNutritionBinding
     private val mealTypes = listOf("Breakfast", "Lunch", "Supper")
-    private var foodItems: List<FoodItem> = emptyList()
+    var foodItems: List<FoodItem> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +97,7 @@ class NutritionActivity : AppCompatActivity() {
         }
     }
 
-    private fun filterFoodItems(query: String) {
+    fun filterFoodItems(query: String) {
         val filtered = foodItems.filter { it.name.contains(query, ignoreCase = true) }
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, filtered.map { it.name })
         binding.searchFoodInput.setAdapter(adapter)

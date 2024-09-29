@@ -74,11 +74,11 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/baseline_email_24"
                     android:inputType="textEmailAddress"
                     android:padding="10dp"
                     android:textColor="@color/black"
-                    android:drawableEnd="@drawable/baseline_email_24"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -100,7 +100,7 @@
                     android:inputType="textPassword"
                     android:padding="10dp"
                     android:textColor="@color/black"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -122,7 +122,7 @@
                     android:inputType="textPassword"
                     android:padding="10dp"
                     android:textColor="@color/black"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -137,7 +137,8 @@
                 android:text="@string/register"
                 app:cornerRadius="15dp"
                 app:backgroundTint="@color/black"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                tools:ignore="VisualLintButtonSize" />
 
             <!-- Transparent Login Button -->
             <com.google.android.material.button.MaterialButton
@@ -147,7 +148,8 @@
                 android:layout_marginTop="10dp"
                 android:backgroundTint="@android:color/transparent"
                 android:text="@string/already_have_an_account_login"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                tools:ignore="VisualLintButtonSize" />
 
             <View
                 android:layout_width="wrap_content"

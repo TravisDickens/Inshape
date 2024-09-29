@@ -67,8 +67,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
+                    android:padding="10dp"
                     android:textColorHint="@color/black"
-                    android:padding="10dp" />
+                    tools:ignore="TextContrastCheck,VisualLintTextFieldSize" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -88,7 +89,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
                     android:padding="10dp"
-                    android:textColorHint="@color/black" />
+                    android:textColorHint="@color/black"
+                    tools:ignore="TextContrastCheck,VisualLintTextFieldSize" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <View
@@ -101,7 +103,8 @@
                 android:layout_height="60dp"
                 android:backgroundTint="@color/black"
                 android:text="@string/login"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                tools:ignore="VisualLintButtonSize" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/loginBiometrics"
@@ -109,7 +112,8 @@
                 android:layout_height="60dp"
                 android:backgroundTint="@color/black"
                 android:text="@string/login_with_biometrics"
-                app:cornerRadius="15dp" />
+                app:cornerRadius="15dp"
+                tools:ignore="VisualLintButtonSize" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/register"
@@ -118,7 +122,8 @@
                 android:layout_marginTop="10dp"
                 android:backgroundTint="@android:color/transparent"
                 android:text="@string/don_t_have_an_account_sign_up"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                tools:ignore="VisualLintButtonSize" />
 
             <View
                 android:layout_width="match_parent"

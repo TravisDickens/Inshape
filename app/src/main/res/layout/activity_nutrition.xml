@@ -52,13 +52,13 @@
             android:id="@+id/search_food_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search for food"
+            android:hint="@string/search_for_food"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
             android:textColor="@color/black"
             android:textColorHint="@color/black"
-            android:paddingVertical="12dp"
-            android:paddingHorizontal="20dp"
             android:textSize="16sp"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Meal Type Dropdown -->
@@ -84,13 +84,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:focusable="false"
-            android:hint="Select meal type"
+            android:focusable="true"
+            android:hint="@string/select_meal_type"
             android:paddingHorizontal="20dp"
             android:paddingVertical="12dp"
             android:textColor="@color/black"
             android:textSize="16sp"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Meal Time Picker -->
@@ -116,13 +116,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:focusable="false"
-            android:hint="Select meal time"
+            android:focusable="true"
+            android:hint="@string/select_meal_time"
             android:paddingHorizontal="20dp"
             android:paddingVertical="12dp"
             android:textColor="@color/black"
             android:textSize="16sp"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- MaterialCardView with content -->
@@ -160,7 +160,7 @@
         android:id="@+id/save_calories_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="@string/save"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:backgroundTint="@color/black"

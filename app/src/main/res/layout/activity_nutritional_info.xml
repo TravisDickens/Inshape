@@ -63,7 +63,7 @@
                         android:id="@+id/header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nutritional Information"
+                        android:text="@string/nutritional_information"
                         android:textColor="@color/black"
                         android:textSize="24sp"
                         android:textStyle="bold"
@@ -92,7 +92,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Food"
+                            android:text="@string/food"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -100,7 +100,7 @@
                             android:id="@+id/food_name_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Avocado"
+                            android:text="@string/avocado"
                             android:textSize="18sp" />
                     </LinearLayout>
 
@@ -117,7 +117,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Meal Type"
+                            android:text="@string/meal_type"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -125,7 +125,7 @@
                             android:id="@+id/meal_type_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Breakfast"
+                            android:text="@string/breakfast"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -143,7 +143,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Meal Time"
+                            android:text="@string/meal_time"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -151,7 +151,7 @@
                             android:id="@+id/meal_time_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="08:00 AM"
+                            android:text="@string/_08_00_am"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
                     </LinearLayout>
@@ -169,7 +169,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Grams"
+                            android:text="@string/grams"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
 
@@ -177,7 +177,7 @@
                             android:id="@+id/grams_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="150g"
+                            android:text="@string/_150g"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
                     </LinearLayout>
@@ -203,7 +203,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Calories"
+                            android:text="@string/calories"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -211,7 +211,7 @@
                             android:id="@+id/calories_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="250 kcal"
+                            android:text="@string/_250_kcal"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -229,7 +229,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Carbohydrates"
+                            android:text="@string/carbohydrates"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -237,7 +237,7 @@
                             android:id="@+id/carbohydrates_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="50g"
+                            android:text="@string/_50g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -255,7 +255,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Protein"
+                            android:text="@string/protein"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -263,7 +263,7 @@
                             android:id="@+id/protein_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="25g"
+                            android:text="@string/_25g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -281,7 +281,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Fat"
+                            android:text="@string/fat"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -289,7 +289,7 @@
                             android:id="@+id/fat_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="10g"
+                            android:text="@string/_10g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -307,7 +307,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Fibre"
+                            android:text="@string/fibre"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
 
@@ -315,7 +315,7 @@
                             android:id="@+id/fibre_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="5g"
+                            android:text="@string/_5g"
                             android:textSize="18sp"
                             android:textColor="@color/black"/>
                     </LinearLayout>
@@ -333,7 +333,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Sugars"
+                            android:text="@string/sugars"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
 
@@ -341,7 +341,7 @@
                             android:id="@+id/sugars_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="15g"
+                            android:text="@string/_15g"
                             android:textSize="18sp"
                             android:textColor="@color/black" />
                     </LinearLayout>
@@ -354,7 +354,7 @@
                 android:id="@+id/save_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Save"
+                android:text="@string/save"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 app:backgroundTint="@color/black"

@@ -35,7 +35,7 @@
         android:layout_height="100dp"
         android:layout_marginTop="16dp"
         android:src="@drawable/baseline_account_circle_24"
-        android:contentDescription="Profile Picture"
+        android:contentDescription="@string/profile_picture"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
         app:layout_constraintTop_toBottomOf="@id/appBar"
@@ -66,7 +66,7 @@
         app:layout_constraintTop_toBottomOf="@id/user_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:hint="Daily Step Goal">
+        android:hint="@string/daily_step_goal">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/steps_goal_input"
@@ -88,7 +88,7 @@
         app:layout_constraintTop_toBottomOf="@id/steps_goal_input_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:hint="Water Intake Goal">
+        android:hint="@string/water_intake_goal">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/water_goal_input"
@@ -110,7 +110,7 @@
         app:layout_constraintTop_toBottomOf="@id/water_goal_input_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:hint="Daily Calorie Goal">
+        android:hint="@string/daily_calorie_goal">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/calorie_goal_input"
@@ -118,7 +118,8 @@
             android:layout_height="wrap_content"
             android:inputType="number"
             android:textColor="@color/black"
-            android:backgroundTint="@color/black" />
+            android:backgroundTint="@color/black"
+            tools:ignore="VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Biometric Authentication Toggle -->
@@ -138,7 +139,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Enable biometric authentication"
+            android:text="@string/enable_biometric_authentication"
             android:textSize="16sp"
             android:textColor="@color/black" />
 
@@ -148,7 +149,7 @@
             android:layout_height="wrap_content"
             android:thumbTint="@color/black"
             android:trackTint="@color/black"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck,UseSwitchCompatOrMaterialXml" />
     </LinearLayout>
 
 
@@ -157,7 +158,7 @@
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="@string/save"
         android:layout_marginTop="24dp"
         android:textColor="@color/white"
         android:backgroundTint="@color/black"

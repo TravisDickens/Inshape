@@ -87,7 +87,7 @@
             android:id="@+id/date_picker_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Todays Intake"
+            android:text="@string/todays_intake"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
             android:textColor="@color/black"
             android:padding="8dp"
@@ -111,7 +111,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="1.5L / 2.0L"
+            android:text="@string/_1_5l_2_0l"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
             android:textColor="@color/black" />
       </LinearLayout>

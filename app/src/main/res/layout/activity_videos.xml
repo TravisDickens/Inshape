@@ -60,14 +60,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="198dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/pushupthumbnail"/>
+                        android:src="@drawable/pushupthumbnail"
+                        tools:ignore="ContentDescription,ImageContrastCheck" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Push-Up Demonstration"
+                        android:text="@string/push_up_demonstration"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -94,14 +95,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/squatthumbnail"/>
+                        android:src="@drawable/squatthumbnail"
+                        tools:ignore="ContentDescription,ImageContrastCheck" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Squat Demonstration"
+                        android:text="@string/squat_demonstration"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -128,14 +130,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/plankthumbnail"/>
+                        android:src="@drawable/plankthumbnail"
+                        tools:ignore="ContentDescription" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Plank Demonstration"
+                        android:text="@string/plank_demonstration"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -161,14 +164,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/benchpressthumbnail"/>
+                        android:src="@drawable/benchpressthumbnail"
+                        tools:ignore="ContentDescription" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Bench Press Demonstration"
+                        android:text="@string/bench_press_demonstration"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -194,14 +198,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/rdlthumbnail"/>
+                        android:src="@drawable/rdlthumbnail"
+                        tools:ignore="ContentDescription" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Romanian Deadlift"
+                        android:text="@string/romanian_deadlift"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -227,14 +232,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/barbellrowthumbnail"/>
+                        android:src="@drawable/barbellrowthumbnail"
+                        tools:ignore="ContentDescription" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
                         android:background="@color/white"
-                        android:text="Bent-Over Barbell Row"
+                        android:text="@string/bent_over_barbell_row"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
