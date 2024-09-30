@@ -101,7 +101,7 @@
             app:indicatorSize="170dp"
             app:indicatorColor="@color/purple_500"
             app:trackColor="@color/gray"
-            android:progress="75"
+            android:progress="0"
             android:max="100" />
 
         <!-- Text showing water intake value -->

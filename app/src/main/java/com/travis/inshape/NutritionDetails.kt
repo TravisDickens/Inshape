@@ -129,26 +129,26 @@ class NutritionDetails : AppCompatActivity() {
     // Update the UI with the total nutritional values
     private fun updateNutritionUI(totalCalories: Double, totalCarbohydrates: Double, totalFats: Double,
                                   totalProteins: Double, totalFibers: Double, totalSugars: Double) {
-        binding.caloriesText.text = "Calories (${totalCalories.toInt()} kcal)"
+        binding.caloriesText.text = "${totalCalories.toInt()} kcal"
         binding.caloriesProgress.progress = totalCalories.toInt()
 
-        binding.carbohydratesText.text = "Carbohydrates (${totalCarbohydrates.toInt()} g)"
+        binding.carbohydratesText.text = "${totalCarbohydrates.toInt()} g"
         binding.carbProgress.max = 300
         binding.carbProgress.progress = totalCarbohydrates.toInt()
 
-        binding.fatText.text = "Fat (${totalFats.toInt()} g)"
+        binding.fatText.text = "${totalFats.toInt()} g"
         binding.fatProgress.max = 70
         binding.fatProgress.progress = totalFats.toInt()
 
-        binding.proteinText.text = "Protein (${totalProteins.toInt()} g)"
+        binding.proteinText.text = "${totalProteins.toInt()} g"
         binding.proteinProgress.max = 50
         binding.proteinProgress.progress = totalProteins.toInt()
 
-        binding.fiberText.text = "Fiber (${totalFibers.toInt()} g)"
+        binding.fiberText.text = "${totalFibers.toInt()} g"
         binding.fiberProgress.max = 30
         binding.fiberProgress.progress = totalFibers.toInt()
 
-        binding.sugarsText.text = "Sugars (${totalSugars.toInt()} g)"
+        binding.sugarsText.text = "${totalSugars.toInt()} g"
         binding.sugarsProgress.max = 50
         binding.sugarsProgress.progress = totalSugars.toInt()
     }

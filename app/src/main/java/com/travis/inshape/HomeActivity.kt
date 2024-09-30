@@ -448,14 +448,14 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
             // Fetch the user's water goal from Firebase
             userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    // Parse the water goal from Firebase or default to 2000 ml if not available
-                    val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000
+                    // Parse the water goal from Firebase or default to 0 ml if not available
+                    val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
 
                     // Fetch the current day's water intake from Firebase for the current user
                     database.child("dailywaterconsumption")
-                        .child(currentUser) 
-                        .child(getCurrentDate()) 
-                        .child("waterIntake") 
+                        .child(currentUser)
+                        .child(getCurrentDate())
+                        .child("waterIntake")
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 // Get the total water intake from Firebase or default to 0 if not found
@@ -468,7 +468,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                             override fun onCancelled(error: DatabaseError) {
                                 Toast.makeText(this@HomeActivity, "Error fetching water intake", Toast.LENGTH_SHORT).show()
                                 Log.e("Firebase", "Error fetching water intake: ${error.message}")
-                                
+
                             }
                         })
                 }
@@ -476,13 +476,13 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                 override fun onCancelled(error: DatabaseError) {
                     Toast.makeText(this@HomeActivity, "Error fetching water goal", Toast.LENGTH_SHORT).show()
                     Log.e("Firebase", "Error fetching water goal: ${error.message}")
-                    
+
                 }
             })
         } else {
             Toast.makeText(this@HomeActivity, "Please login again", Toast.LENGTH_SHORT).show()
             Log.w("Firebase", "No authenticated user found")
-           
+
         }
     }
 
@@ -591,7 +591,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                                 } else {
                                     // If no data exists for the current date, set calories to 0
                                     Log.d("NutritionalInfo", "No nutritional data found for the current date.")
-                                    binding.CaloriesConsumed.text = "0 Kcal / ${dailyCalorieGoal.toInt()} Kcal"
+                                    binding.CaloriesConsumed.text = "0 / ${dailyCalorieGoal.toInt()} Kcal"
                                 }
                             }
 

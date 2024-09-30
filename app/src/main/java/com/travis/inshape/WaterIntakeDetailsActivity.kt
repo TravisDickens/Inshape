@@ -70,6 +70,8 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
 
             // Fetch water intake history for chart plotting
             fetchWaterIntakeHistory(currentUser)
+        } else {
+            Log.e("WaterIntakeDetails", "No current user found")
         }
     }
 
@@ -115,14 +117,23 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
                     val entries = ArrayList<Entry>()
                     var index = 0
 
-                    for (dataSnapshot in snapshot.children) {
-                        val waterIntake = dataSnapshot.child("waterIntake").getValue(Int::class.java) ?: 0
-                        entries.add(Entry(index.toFloat(), waterIntake.toFloat()))
-                        index++
+                    // Check if snapshot has children
+                    if (snapshot.hasChildren()) {
+                        for (dataSnapshot in snapshot.children) {
+                            val waterIntake = dataSnapshot.child("waterIntake").getValue(Int::class.java) ?: 0
+                            entries.add(Entry(index.toFloat(), waterIntake.toFloat()))
+                            index++
+                        }
+                    } else {
+                        Log.e("WaterIntakeDetails", "No water intake history found for user")
                     }
 
-                    // Plot the chart
-                    plotChart(entries)
+                    // Plot the chart if there are entries
+                    if (entries.isNotEmpty()) {
+                        plotChart(entries)
+                    } else {
+                        Log.e("WaterIntakeDetails", "No data available for chart plotting")
+                    }
                 } catch (e: Exception) {
                     Log.e("WaterIntakeDetails", "Error fetching water intake history: ${e.message}")
                 }
@@ -133,6 +144,7 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun plotChart(entries: ArrayList<Entry>) {
         // Create dataset
