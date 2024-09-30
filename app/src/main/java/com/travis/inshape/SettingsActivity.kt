@@ -71,6 +71,29 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
+        // Access the "Stay Signed In" Switch using the ID
+        val staySignedInSwitch = binding.staySignedInSwitch
+
+        // Set the initial state of the Switch based on shared preferences
+        staySignedInSwitch.isChecked = sharedPreferences.getBoolean("stay_signed_in", false)
+
+        // Set up the listener for the Switch
+        staySignedInSwitch.setOnCheckedChangeListener { _, isChecked ->
+            // Save the new state in shared preferences
+            with(sharedPreferences.edit()) {
+                putBoolean("stay_signed_in", isChecked)
+                apply()
+            }
+
+            // Optionally, show a toast message indicating the current state
+            val message = if (isChecked) {
+                "You will stay signed in"
+            } else {
+                "You will need to log in each time"
+            }
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
+
 
         // Display the logged-in user's email
         getLoggedInUserEmail()

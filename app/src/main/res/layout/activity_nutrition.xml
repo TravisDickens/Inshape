@@ -46,6 +46,7 @@
         app:endIconDrawable="@drawable/search"
         android:layout_marginTop="16dp"
         android:layout_marginHorizontal="16dp"
+        app:boxBackgroundColor="@color/white"
         android:elevation="4dp">
 
         <AutoCompleteTextView
@@ -70,11 +71,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/my_primary"
+        app:boxStrokeColor="@color/black"
         app:boxCornerRadiusTopStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusBottomEnd="16dp"
+        app:boxBackgroundColor="@color/white"
         android:elevation="4dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp">
@@ -89,6 +91,7 @@
             android:paddingHorizontal="20dp"
             android:paddingVertical="12dp"
             android:textColor="@color/black"
+            android:textColorHint="@color/black"
             android:textSize="16sp"
             tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -102,7 +105,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:boxBackgroundMode="outline"
-        app:boxStrokeColor="@color/my_primary"
+        app:boxStrokeColor="@color/black"
+        app:boxBackgroundColor="@color/white"
         app:boxCornerRadiusTopStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
@@ -121,6 +125,7 @@
             android:paddingHorizontal="20dp"
             android:paddingVertical="12dp"
             android:textColor="@color/black"
+            android:textColorHint="@color/black"
             android:textSize="16sp"
             tools:ignore="TouchTargetSizeCheck,TextContrastCheck,VisualLintTextFieldSize" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -160,7 +165,7 @@
         android:id="@+id/save_calories_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/save"
+        android:text="Next"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:backgroundTint="@color/black"

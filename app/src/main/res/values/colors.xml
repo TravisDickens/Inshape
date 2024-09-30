@@ -20,5 +20,5 @@
     <color name="primaryTextColor">#2C3E50</color>
     <color name="secondaryTextColor">#7F8C8D</color>
     <color name="progressBarBackground">#D3D3D3</color>
-    <color name="material_background">#F5F5F5</color>
+    <color name="material_background">#2196F3</color>
 </resources>
