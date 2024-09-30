@@ -22,8 +22,10 @@ class MainActivity : AppCompatActivity() {
         Handler().postDelayed({
             val staySignedIn = sharedPreferences.getBoolean("stay_signed_in", false)
             val nextActivity = if (staySignedIn) {
+                //navigate to home
                 Intent(this@MainActivity, HomeActivity::class.java)
             } else {
+                //navigate to login
                 Intent(this@MainActivity, LoginActivity::class.java)
             }
             startActivity(nextActivity)
