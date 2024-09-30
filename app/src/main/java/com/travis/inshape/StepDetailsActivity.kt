@@ -32,11 +32,9 @@ class StepDetailsActivity : AppCompatActivity() {
     private lateinit var tabLayout: TabLayout
     private lateinit var currentDate: String
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_step_details)
-
 
         // Initialize Firebase
         auth = FirebaseAuth.getInstance()
@@ -63,10 +61,12 @@ class StepDetailsActivity : AppCompatActivity() {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 val selectedTab = tab?.text
                 when (selectedTab) {
-                    "Day" -> fetchStepData(currentDate) // Fetch daily data
-                    "Week" -> fetchWeeklyData()         // Fetch weekly data
-                    "Month" -> fetchMonthlyData()       // Fetch monthly data
-
+                    // Fetch daily data
+                    "Day" -> fetchStepData(currentDate)
+                    // Fetch weekly data
+                    "Week" -> fetchWeeklyData()
+                    // Fetch monthly data
+                    "Month" -> fetchMonthlyData()
                 }
             }
 
@@ -78,21 +78,25 @@ class StepDetailsActivity : AppCompatActivity() {
     private fun fetchStepData(date: String) {
         val userId = auth.currentUser?.uid.toString()
         database.child("users").child(userId).child("dailyData").child(date)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
+                    try {
+                        if (snapshot.exists()) {
+                            val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
 
-                        // Display the steps in the TextView
-                        totalStepsTextView.text = steps.toString()
+                            // Display the steps in the TextView
+                            totalStepsTextView.text = steps.toString()
 
-                        // Optionally, update LineChart here
-                        updateLineChart(listOf(steps))
+                            //update LineChart here
+                            updateLineChart(listOf(steps))
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@StepDetailsActivity, "Error processing data: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@StepDetailsActivity, "Failed to fetch data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@StepDetailsActivity, "Failed to fetch data: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -108,16 +112,22 @@ class StepDetailsActivity : AppCompatActivity() {
             database.child("users").child(userId).child("dailyData").child(date)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
-                        stepsPerWeek.add(steps)
+                        try {
+                            val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
+                            stepsPerWeek.add(steps)
 
-                        if (stepsPerWeek.size == 7) {
-                            // Update LineChart with weekly data
-                            updateLineChart(stepsPerWeek)
+                            if (stepsPerWeek.size == 7) {
+                                // Update LineChart with weekly data
+                                updateLineChart(stepsPerWeek)
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(this@StepDetailsActivity, "Error processing weekly data: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
 
-                    override fun onCancelled(error: DatabaseError) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@StepDetailsActivity, "Failed to fetch weekly data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
                 })
             // Move to the previous day
             calendar.add(Calendar.DATE, -1)
@@ -135,74 +145,96 @@ class StepDetailsActivity : AppCompatActivity() {
             database.child("users").child(userId).child("dailyData").child(date)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
-                        stepsPerMonth.add(steps)
+                        try {
+                            val steps = snapshot.child("steps").getValue(Int::class.java) ?: 0
+                            stepsPerMonth.add(steps)
 
-                        if (stepsPerMonth.size == 30) {
-                            // Update LineChart with monthly data
-                            updateLineChart(stepsPerMonth)
+                            if (stepsPerMonth.size == 30) {
+                                // Update LineChart with monthly data
+                                updateLineChart(stepsPerMonth)
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(this@StepDetailsActivity, "Error processing monthly data: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
 
-                    override fun onCancelled(error: DatabaseError) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@StepDetailsActivity, "Failed to fetch monthly data: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
                 })
             // Move to the previous day
             calendar.add(Calendar.DATE, -1)
         }
     }
 
-
-
-
     private fun updateLineChart(stepsData: List<Int>) {
-        // Reverse the data so that the oldest date is on the left, and today is on the right
-        val reversedStepsData = stepsData.reversed()
+        try {
+            // Reverse the data so that the oldest date is on the left, and today is on the right
+            val reversedStepsData = stepsData.reversed()
 
-        val entries = ArrayList<Entry>()
+            val entries = ArrayList<Entry>()
 
-        // Iterate through the reversed list to create entries
-        for (i in reversedStepsData.indices) {
-            entries.add(Entry(i.toFloat(), reversedStepsData[i].toFloat()))
-        }
-
-        // Create the data set with custom styling
-        val dataSet = LineDataSet(entries, "Steps").apply {
-            color = ContextCompat.getColor(this@StepDetailsActivity, R.color.my_secondary) // Line color
-            lineWidth = 2f // Line width
-            circleRadius = 5f // Circle radius for data points
-            setCircleColor(ContextCompat.getColor(this@StepDetailsActivity, R.color.white)) // Circle color
-            setCircleColorHole(ContextCompat.getColor(this@StepDetailsActivity, R.color.my_primary)) // Circle hole color
-            mode = LineDataSet.Mode.CUBIC_BEZIER // Use cubic bezier for smooth line
-            valueTextColor = ContextCompat.getColor(this@StepDetailsActivity, R.color.black) // Value text color
-            valueTextSize = 10f // Value text size
-
-            // Optional: Add a gradient fill
-            setDrawFilled(true)
-            fillDrawable = ContextCompat.getDrawable(this@StepDetailsActivity, R.drawable.gradient_fill) // Custom gradient drawable
-        }
-
-        val lineData = LineData(dataSet)
-
-        // Customize the chart appearance
-        lineChart.apply {
-            data = lineData
-            description.isEnabled = false // Disable description label
-            legend.isEnabled = false // Disable legend
-            setDrawGridBackground(false) // Disable grid background
-            setDrawBorders(false) // Disable borders
-            xAxis.apply {
-                setDrawGridLines(false) // Disable grid lines on x-axis
-                position = XAxis.XAxisPosition.BOTTOM // Positioning of x-axis labels
-                xAxis.isEnabled = false
+            // Iterate through the reversed list to create entries
+            for (i in reversedStepsData.indices) {
+                entries.add(Entry(i.toFloat(), reversedStepsData[i].toFloat()))
             }
-            axisLeft.apply {
-                setDrawGridLines(false) // Disable grid lines on left y-axis
-            }
-            axisRight.isEnabled = false // Disable right y-axis
-            animateX(500) // Animation for line chart
-        }
 
-        lineChart.invalidate() // Refresh chart with new data
+            // Create the data set with custom styling
+            val dataSet = LineDataSet(entries, "Steps").apply {
+                // Line color
+                color = ContextCompat.getColor(this@StepDetailsActivity, R.color.my_secondary)
+                // Line width
+                lineWidth = 2f
+                // Circle radius for data points
+                circleRadius = 5f
+                // Circle color
+                setCircleColor(ContextCompat.getColor(this@StepDetailsActivity, R.color.white))
+                // Circle hole color
+                setCircleColorHole(ContextCompat.getColor(this@StepDetailsActivity, R.color.my_primary))
+                // Use cubic bezier for smooth line
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+                // Value text color
+                valueTextColor = ContextCompat.getColor(this@StepDetailsActivity, R.color.black)
+                valueTextSize = 10f // Value text size
+
+                //Add a gradient fill
+                setDrawFilled(true)
+                fillDrawable = ContextCompat.getDrawable(this@StepDetailsActivity, R.drawable.gradient_fill)
+            }
+
+            val lineData = LineData(dataSet)
+
+            // Customize the chart appearance
+            lineChart.apply {
+                data = lineData
+                // Disable description label
+                description.isEnabled = false
+                // Disable legend
+                legend.isEnabled = false
+                // Disable grid background
+                setDrawGridBackground(false)
+                // Disable borders
+                setDrawBorders(false)
+                xAxis.apply {
+                    // Disable grid lines on x-axis
+                    setDrawGridLines(false)
+                    // Positioning of x-axis labels
+                    position = XAxis.XAxisPosition.BOTTOM
+                    xAxis.isEnabled = false
+                }
+                axisLeft.apply {
+                    // Disable grid lines on left y-axis
+                    setDrawGridLines(false)
+                }
+                // Disable right y-axis
+                axisRight.isEnabled = false
+                // Animation for line chart
+                animateX(500)
+            }
+             // Refresh chart with new data
+            lineChart.invalidate()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error updating line chart: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
-
 }

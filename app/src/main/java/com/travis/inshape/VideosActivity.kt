@@ -3,6 +3,7 @@ package com.travis.inshape
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import com.google.android.material.card.MaterialCardView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -10,8 +11,8 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 
 class VideosActivity : AppCompatActivity() {
     private lateinit var youTubePlayerView: YouTubePlayerView
-    private var youTubePlayer: YouTubePlayer? = null // Change to nullable
-    private var pendingVideoId: String? = null // Store pending video ID
+    private var youTubePlayer: YouTubePlayer? = null
+    private var pendingVideoId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +30,10 @@ class VideosActivity : AppCompatActivity() {
             override fun onReady(youTubePlayer: YouTubePlayer) {
                 this@VideosActivity.youTubePlayer = youTubePlayer
                 pendingVideoId?.let {
-                    youTubePlayer.loadVideo(it, 0f) // Load the pending video if available
-                    pendingVideoId = null // Clear pending video ID
+                    // Load the pending video if available
+                    youTubePlayer.loadVideo(it, 0f)
+                    // Clear pending video ID
+                    pendingVideoId = null
                 }
             }
         })
@@ -38,54 +41,73 @@ class VideosActivity : AppCompatActivity() {
         // Push-Up Card Click Listener
         val pushUpCard = findViewById<MaterialCardView>(R.id.card_push_up)
         pushUpCard.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("I9fsqKE5XHo") // YouTube video ID for Push-Up
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // YouTube video ID for Push-Up
+            playYouTubeVideo("I9fsqKE5XHo")
         }
 
         // Squat Card Click Listener
         val squatCard = findViewById<MaterialCardView>(R.id.card_squat)
         squatCard.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("U3HlEF_E9fo") // Valid YouTube video ID for Squat
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // Valid YouTube video ID for Squat
+            playYouTubeVideo("U3HlEF_E9fo")
         }
 
         // Plank Card Click Listener
         val plankCard = findViewById<MaterialCardView>(R.id.card_plank)
         plankCard.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("e13yvYaOyqg") // Valid YouTube video ID for Plank
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // Valid YouTube video ID for Plank
+            playYouTubeVideo("e13yvYaOyqg")
         }
 
         val chestCard = findViewById<MaterialCardView>(R.id.card_Chest)
         chestCard.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("4Y2ZdHCOXok") // Valid YouTube video ID for Plank
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // Valid YouTube video ID for Chest
+            playYouTubeVideo("4Y2ZdHCOXok")
         }
 
         val RDL = findViewById<MaterialCardView>(R.id.card_RDL)
         RDL.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("_oyxCn2iSjU") // Valid YouTube video ID for Plank
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // Valid YouTube video ID for RDL
+            playYouTubeVideo("_oyxCn2iSjU")
         }
 
         val Rows = findViewById<MaterialCardView>(R.id.card_BarbellRow)
         Rows.setOnClickListener {
-            youTubePlayerView.visibility = View.VISIBLE // Show YouTubePlayerView
-            playYouTubeVideo("qXrTDQG1oUQ") // Valid YouTube video ID for Plank
+            // Show YouTubePlayerView
+            youTubePlayerView.visibility = View.VISIBLE
+            // Valid YouTube video ID for Barbell Row
+            playYouTubeVideo("qXrTDQG1oUQ")
         }
     }
 
     // Function to play YouTube video in YouTubePlayerView
     private fun playYouTubeVideo(videoId: String) {
-        if (youTubePlayer != null) {
-            youTubePlayer!!.loadVideo(videoId, 0f) // Use the already initialized YouTubePlayer
-        } else {
-            pendingVideoId = videoId // Store the video ID until the player is ready
+        try {
+            if (youTubePlayer != null) {
+                // Use the already initialized YouTubePlayer
+                youTubePlayer!!.loadVideo(videoId, 0f)
+            } else {
+                // Store the video ID until the player is ready
+                pendingVideoId = videoId
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error loading video: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        youTubePlayerView.release() // Important to release resources
+        // Important to release resources
+        youTubePlayerView.release()
     }
 }

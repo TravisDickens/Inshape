@@ -59,7 +59,8 @@ class LoginActivity : AppCompatActivity() {
                 val user = auth.currentUser
                 if (user != null) {
                     startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
-                    finish()  // Close the current activity
+                    // Close the current activity
+                    finish()
                 } else {
                     Toast.makeText(applicationContext, "Please log in first", Toast.LENGTH_SHORT).show()
                 }
@@ -72,6 +73,7 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
+        // Set up biometric prompt info
         promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Biometric Login")
             .setSubtitle("Log in using your biometric credential")
@@ -87,6 +89,7 @@ class LoginActivity : AppCompatActivity() {
             val email = binding.UserName.editText?.text.toString().trim()
             val password = binding.Password.editText?.text.toString().trim()
 
+            // Check for empty fields before attempting to log in
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Enter valid details", Toast.LENGTH_SHORT).show()
             } else {
@@ -106,6 +109,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        // Configure Google sign-in request
         signInRequest = BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
@@ -116,37 +120,45 @@ class LoginActivity : AppCompatActivity() {
             ).build()
     }
 
+    // Function to handle Google Sign-In
     private fun signinGoogle() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
+                // Begin the sign-in process
                 val result = oneTapClient?.beginSignIn(signInRequest)?.await()
                 val intentSenderRequest = IntentSenderRequest.Builder(result!!.pendingIntent).build()
                 activityResultLauncher.launch(intentSenderRequest)
             } catch (e: ApiException) {
-                e.printStackTrace()
+                // Handle Google sign-in exception
+                Toast.makeText(this@LoginActivity, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // Result launcher for handling sign-in results
     private val activityResultLauncher: ActivityResultLauncher<IntentSenderRequest> =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 try {
+                    // Retrieve credential from the intent
                     val credential = oneTapClient!!.getSignInCredentialFromIntent(result.data)
                     val idToken = credential.googleIdToken
                     if (idToken != null) {
+                        // Authenticate with Firebase using the Google ID token
                         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
                         auth.signInWithCredential(firebaseCredential).addOnCompleteListener {
                             if (it.isSuccessful) {
                                 startActivity(Intent(this, HomeActivity::class.java))
                                 finish()
                             } else {
+                                // Handle sign-in failure
                                 Toast.makeText(this, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
-                } catch (e: ApiException){
-                    e.printStackTrace()
+                } catch (e: ApiException) {
+                    // Handle exception while retrieving credential
+                    Toast.makeText(this, "Failed to get credential: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -162,7 +174,7 @@ class LoginActivity : AppCompatActivity() {
                 finish()  // Close the current activity
             } else {
                 // If login fails, display an error message
-                Toast.makeText(this, "Login Failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Login Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

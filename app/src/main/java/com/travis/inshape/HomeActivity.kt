@@ -32,13 +32,8 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
     private var isFirstSensorEvent = true
     private val ACTIVITY_RECOGNITION_REQUEST_CODE = 1
     private var caloriesBurned = 0.0
-
     private var lastUpdatedDate: String? = null
-
-
-
     private lateinit var binding: ActivityHomeBinding
-
     // Firebase references
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
@@ -167,36 +162,48 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun loadStepsFromFirebase() {
-        val currentDate = getCurrentDate()
-        val dailyDataRef = database.child("dailyData").child(currentDate)
+        val currentDate = getCurrentDate() // Get the current date in the required format
+        val dailyDataRef = database.child("dailyData").child(currentDate) // Reference to the user's daily data in Firebase
 
-        // Fetch steps and calories
+        // Fetch steps and calories from Firebase
         dailyDataRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists()) {
-                    // Load steps
-                    stepsTaken = snapshot.child("steps").getValue(Int::class.java) ?: 0
-                    lastUpdatedDate = currentDate // Update last updated date
-                    Log.d("Firebase", "Loaded steps: $stepsTaken")
-                    binding.stepsTaken.text = "$stepsTaken"
+                try {
+                    if (snapshot.exists()) {
+                        // Load steps from Firebase, default to 0 if the value is null
+                        stepsTaken = snapshot.child("steps").getValue(Int::class.java) ?: 0
+                        // Update the last updated date with today's date
+                        lastUpdatedDate = currentDate
+                        Log.d("Firebase", "Loaded steps: $stepsTaken")
+                        // Update the steps text in the UI
+                        binding.stepsTaken.text = "$stepsTaken"
 
-                    // Load calories
-                    val storedCalories = snapshot.child("calories").getValue(Double::class.java) ?: 0.0
-                    Log.d("Firebase", "Loaded calories: $storedCalories")
-                    binding.caloriesTextView.text = String.format("%.2f Kcal", storedCalories)
+                        // Load calories from Firebase, default to 0.0 if the value is null
+                        val storedCalories = snapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                        Log.d("Firebase", "Loaded calories: $storedCalories")
+                        // Format and display calories in the UI
+                        binding.caloriesTextView.text = String.format("%.2f Kcal", storedCalories)
+                    }
+
+                    // Register the sensor listener after loading steps to track real-time steps
+                    registerSensorListener()
+
+                } catch (e: Exception) {
+                    // Handle any exceptions during data parsing or UI updates
+                    Log.e("Firebase", "Error parsing data from Firebase", e)
                 }
-
-                // Register the sensor listener after loading steps
-                registerSensorListener()
             }
 
             override fun onCancelled(error: DatabaseError) {
+                // Handle the error when Firebase operation is cancelled or fails
                 Log.e("Firebase", "Error loading dailyData", error.toException())
-                // Still register the sensor listener even if Firebase fails
+
+                // Still register the sensor listener even if loading from Firebase fails
                 registerSensorListener()
             }
         })
     }
+
 
 
     private fun resetStepsForNewDay(currentDate: String) {
@@ -219,24 +226,37 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
         }
 
         // Update last updated date regardless of whether it's a new day
-        lastUpdatedDate = currentDate // Update last updated date
+        lastUpdatedDate = currentDate
     }
 
 
 
 
     private fun registerSensorListener() {
+        // Set the flag to indicate the sensor listener is running
         running = true
+
+        // Try to get the step counter sensor from the device's sensor manager
         val stepSensor: Sensor? = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
+        // Check if the device has a step counter sensor
         if (stepSensor == null) {
+            // Show a message to the user if no step counter sensor is found
             Toast.makeText(this, "No step counter sensor detected on device", Toast.LENGTH_SHORT).show()
             Log.e("Sensor", "Step Counter sensor not available")
         } else {
-            sensorManager?.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
-            Log.d("Sensor", "Step Counter sensor listener registered")
+            try {
+                // Register the sensor listener to receive updates from the step counter sensor
+                sensorManager?.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
+                Log.d("Sensor", "Step Counter sensor listener registered")
+            } catch (e: Exception) {
+                // Handle any potential exception during the registration process
+                Log.e("Sensor", "Error registering step counter sensor listener", e)
+                Toast.makeText(this, "Error registering sensor listener", Toast.LENGTH_SHORT).show()
+            }
         }
     }
+
 
 
     private fun requestActivityRecognitionPermission() {
@@ -276,50 +296,65 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
 
     override fun onSensorChanged(event: SensorEvent?) {
+        // Ensure the sensor event is not null and the listener is running
         if (running && event != null) {
             totalSteps = event.values[0]
             Log.d("Sensor", "Total Steps from sensor: $totalSteps")
 
+            // Check if this is the first sensor event after the app started
             if (isFirstSensorEvent) {
-                // Initialize previousTotalSteps based on stepsTaken
+                // Initialize previousTotalSteps to adjust for already counted steps (stepsTaken)
                 previousTotalSteps = totalSteps - stepsTaken
+                // Mark as false after initializing
                 isFirstSensorEvent = false
                 Log.d("Sensor", "Set previousTotalSteps to $previousTotalSteps")
             }
 
-            // Calculate new steps
+            // Calculate the number of new steps by subtracting previousTotalSteps
             val newSteps = (totalSteps - previousTotalSteps).toInt()
 
-            // Ensure steps are not negative
+            // Ensure that the new steps value is not negative
             if (newSteps < 0) {
-                Log.w("StepCounter", "New steps negative: $newSteps")
-                return
+                Log.w("StepCounter", "New steps are negative: $newSteps")
+                return // Exit the function to avoid updating with negative steps
             }
 
             if (newSteps > 0) {
-                // Update stepsTaken
+                // Add the new steps to the total stepsTaken for the session
                 stepsTaken += newSteps
-                Log.d("StepCounter", "Added $newSteps steps. Total steps: $stepsTaken")
+                Log.d("StepCounter", "Added $newSteps steps. Total steps: $stepsTaken") // Log step addition
 
-                // Update UI
+                // Update the UI with the new step count and calories burned
                 binding.stepsTaken.text = "$stepsTaken"
+                // Calculate calories burned
                 caloriesBurned = stepsTaken * 0.04
+                // Update UI with calories
                 binding.caloriesTextView.text = String.format("%.2f Kcal", caloriesBurned)
+                // Animate progress bar
                 binding.circularProgressBar.setProgressWithAnimation(stepsTaken.toFloat())
 
-                // Check if it's a new day before saving
+                // Check if the current day has changed (a new day), and reset steps if needed
                 if (getCurrentDate() != lastUpdatedDate) {
+                    // Reset steps for the new day
                     resetStepsForNewDay(getCurrentDate())
                 }
 
-                // Update Firebase with the new steps after resetting for a new day
-                saveStepData(stepsTaken, caloriesBurned)
+                // Save the updated step count and calories burned to Firebase
+                try {
+                    // Save data to Firebase
+                    saveStepData(stepsTaken, caloriesBurned)
+                } catch (e: Exception) {
+                    Log.e("Firebase", "Error saving step data to Firebase", e)
+                }
 
-                // Update previousTotalSteps
+                // Update previousTotalSteps to the current totalSteps after processing
                 previousTotalSteps = totalSteps
             }
+        } else {
+            Log.e("Sensor", "Sensor event is null or listener is not running")
         }
     }
+
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
 
@@ -327,27 +362,34 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
 
     private fun saveStepData(currentSteps: Int, caloriesBurned: Double) {
-        val currentDate = getCurrentDate()
-        val dailyDataRef = database.child("dailyData").child(currentDate)
+        val currentDate = getCurrentDate() // Get the current date to store data for the specific day
+        val dailyDataRef = database.child("dailyData").child(currentDate) // Reference to the daily data node in Firebase
 
-        // Update steps
+        // Update steps in Firebase under the current date node
         dailyDataRef.child("steps").setValue(currentSteps)
             .addOnSuccessListener {
+                
                 Log.d("Firebase", "Steps updated successfully: $currentSteps")
             }
             .addOnFailureListener { e ->
+                Toast.makeText(this@HomeActivity, "Error updating steps", Toast.LENGTH_SHORT).show()
                 Log.e("Firebase", "Error updating steps", e)
+               
             }
 
-        // Update calories
+        // Update calories burned in Firebase under the current date node
         dailyDataRef.child("calories").setValue(caloriesBurned)
             .addOnSuccessListener {
+               
                 Log.d("Firebase", "Calories updated successfully: $caloriesBurned")
             }
             .addOnFailureListener { e ->
+                Toast.makeText(this@HomeActivity, "Error updating calories", Toast.LENGTH_SHORT).show()
                 Log.e("Firebase", "Error updating calories", e)
+               
             }
     }
+
 
 
     fun resetSteps() {
@@ -358,7 +400,8 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
         // Store the current sensor steps as the new previousTotalSteps
         val currentTotalSteps = totalSteps
         previousTotalSteps = currentTotalSteps
-        isFirstSensorEvent = false // Reset flag
+        // Reset flag
+        isFirstSensorEvent = false 
         stepsTaken = 0
         Log.d("ResetSteps", "Steps reset. previousTotalSteps set to $previousTotalSteps")
 
@@ -377,6 +420,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                 Log.d("Firebase", "Steps reset to 0")
             }
             .addOnFailureListener { e ->
+                Toast.makeText(this@HomeActivity, "Failed to reset steps", Toast.LENGTH_SHORT).show()
                 Log.e("Firebase", "Error resetting steps", e)
             }
 
@@ -386,160 +430,240 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                 Log.d("Firebase", "Calories reset to 0.0")
             }
             .addOnFailureListener { e ->
+                Toast.makeText(this@HomeActivity, "Failed to reset calories", Toast.LENGTH_SHORT).show()
                 Log.e("Firebase", "Error resetting calories", e)
             }
     }
 
 
     private fun initWaterIntake() {
+        // Get the current authenticated user
         val currentUser = auth.currentUser?.uid
 
+        // Ensure the user is authenticated before proceeding
         if (currentUser != null) {
-            // Reference to the user's water goal in Firebase
+            // Reference to the user's water goal node in Firebase
             val userGoalsRef = database.child("goals")
 
-            // Fetch water goal from Firebase
+            // Fetch the user's water goal from Firebase
             userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    // Parse the water goal from Firebase or default to 2000 ml if not available
                     val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000
 
-                    // Load initial water intake from Firebase
-                    database.child("dailywaterconsumption").child(currentUser).child(getCurrentDate()).child("waterIntake")
+                    // Fetch the current day's water intake from Firebase for the current user
+                    database.child("dailywaterconsumption")
+                        .child(currentUser) 
+                        .child(getCurrentDate()) 
+                        .child("waterIntake") 
                         .addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
+                                // Get the total water intake from Firebase or default to 0 if not found
                                 totalWaterIntake = snapshot.getValue(Int::class.java) ?: 0
 
-                                // Update UI with water intake and water goal
-                                binding.waterIntakeTextView.text = "$totalWaterIntake ml / $waterGoal ml"
+                                // Update the UI with the current water intake and water goal
+                                binding.waterIntakeTextView.text = "$totalWaterIntake / $waterGoal ml"
                             }
 
                             override fun onCancelled(error: DatabaseError) {
+                                Toast.makeText(this@HomeActivity, "Error fetching water intake", Toast.LENGTH_SHORT).show()
                                 Log.e("Firebase", "Error fetching water intake: ${error.message}")
+                                
                             }
                         })
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@HomeActivity, "Error fetching water goal", Toast.LENGTH_SHORT).show()
                     Log.e("Firebase", "Error fetching water goal: ${error.message}")
+                    
                 }
             })
+        } else {
+            Toast.makeText(this@HomeActivity, "Please login again", Toast.LENGTH_SHORT).show()
+            Log.w("Firebase", "No authenticated user found")
+           
         }
     }
+
 
 
     private fun updateWaterIntake(amount: Int) {
-        // Increase water intake
-        totalWaterIntake += amount
+        try {
+            // Increase water intake by the specified amount
+            totalWaterIntake += amount
 
-        // Fetch current user and water goal to update UI properly
-        val currentUser = auth.currentUser?.uid
+            // Get the current authenticated user
+            val currentUser = auth.currentUser?.uid
 
-        if (currentUser != null) {
-            val userGoalsRef = database.child("goals")
+            // Ensure user is authenticated before proceeding
+            if (currentUser != null) {
+                val userGoalsRef = database.child("goals")
 
-            // Fetch water goal again (if needed)
-            userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000
+                // Fetch the user's water goal from Firebase
+                userGoalsRef.child("waterGoal").addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // Get water goal from Firebase or default to 0 ml if not found
+                        val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
 
-                    // Update the UI with new water intake and goal
-                    binding.waterIntakeTextView.text = "$totalWaterIntake ml / $waterGoal ml"
+                        // Update the UI with the new total water intake and goal
+                        binding.waterIntakeTextView.text = "$totalWaterIntake / $waterGoal ml"
 
-                    // Get the current date in YYYY-MM-DD format
-                    val currentDate = getCurrentDate()
+                        // Get the current date in YYYY-MM-DD format
+                        val currentDate = getCurrentDate()
 
-                    // Save water intake under the current date in Firebase
-                    database.child("dailywaterconsumption").child(currentUser).child(currentDate).child("waterIntake").setValue(totalWaterIntake)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Water intake updated successfully.")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error updating water intake", e)
-                        }
-                }
+                        // Save the updated water intake in Firebase under the current user's node for today's date
+                        database.child("dailywaterconsumption")
+                            .child(currentUser)
+                            .child(currentDate)
+                            .child("waterIntake")
+                            .setValue(totalWaterIntake)
+                            .addOnSuccessListener {
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("Firebase", "Error fetching water goal: ${error.message}")
-                }
-            })
+                                Log.d("Firebase", "Water intake updated successfully.")
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(this@HomeActivity, "Error updating water intake", Toast.LENGTH_SHORT).show()
+                                Log.e("Firebase", "Error updating water intake", e)
+
+                            }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@HomeActivity, "Error fetching water goal", Toast.LENGTH_SHORT).show()
+                        Log.e("Firebase", "Error fetching water goal: ${error.message}")
+
+                    }
+                })
+            } else {
+                Toast.makeText(this@HomeActivity, "No authenticated user found, Cannot update eater intake", Toast.LENGTH_SHORT).show()
+                Log.w("Firebase", "No authenticated user found. Cannot update water intake.")
+
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this@HomeActivity, "Unexpected error occurred while updating water intake", Toast.LENGTH_SHORT).show()
+            Log.e("UpdateWaterIntake", "Unexpected error occurred while updating water intake", e)
+
         }
     }
+
 
 
     private fun fetchAndDisplayCalories() {
-        val currentUser = auth.currentUser?.uid
-        val currentDate = getCurrentDate() // Get the current date dynamically
+        try {
+            // Get the current authenticated user
+            val currentUser = auth.currentUser?.uid
+            // Get the current date in the correct format
+            val currentDate = getCurrentDate()
 
-        if (currentUser != null) {
-            // Reference to the user's goals in Firebase
-            val userGoalsRef = database.child("goals")
-            val userNutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
+            // Ensure the user is authenticated before proceeding
+            if (currentUser != null) {
+                // Reference to the user's goals and nutritional info in Firebase
+                val userGoalsRef = database.child("goals")
+                val userNutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
 
-            // Fetch calorie goal first
-            userGoalsRef.child("calorieGoal").addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val dailyCalorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 2500.0
+                // Fetch the calorie goal from Firebase
+                userGoalsRef.child("calorieGoal").addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // Get the calorie goal, or use a default value of 0 Kcal if not found
+                        val dailyCalorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
 
-                    // Now fetch the calories consumed
-                    userNutritionalInfoRef.addValueEventListener(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            var totalCalories = 0.0
+                        // Fetch the calories consumed from Firebase
+                        userNutritionalInfoRef.addValueEventListener(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                var totalCalories = 0.0
 
-                            if (snapshot.exists()) {
-                                // Loop through each meal type (e.g., Breakfast, Lunch)
-                                for (mealTypeSnapshot in snapshot.children) {
-                                    Log.d("NutritionalInfo", "Meal Type: ${mealTypeSnapshot.key}")
+                                if (snapshot.exists()) {
+                                    // Loop through each meal type
+                                    for (mealTypeSnapshot in snapshot.children) {
+                                        Log.d("NutritionalInfo", "Meal Type: ${mealTypeSnapshot.key}")
 
-                                    // Loop through the individual meals under each meal type
-                                    for (entrySnapshot in mealTypeSnapshot.children) {
-                                        val calories = entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
-                                        totalCalories += calories
-                                        Log.d("NutritionalInfo", "Calories for ${entrySnapshot.key}: $calories")
+                                        // Loop through individual meals under each meal type and sum the calories
+                                        for (entrySnapshot in mealTypeSnapshot.children) {
+                                            val calories = entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                                            totalCalories += calories
+                                            Log.d("NutritionalInfo", "Calories for ${entrySnapshot.key}: $calories")
+                                        }
                                     }
+
+                                    // Update the UI with the total calories consumed and the calorie goal
+                                    binding.CaloriesConsumed.text = "${totalCalories.toInt()} / ${dailyCalorieGoal.toInt()} Kcal"
+                                } else {
+                                    // If no data exists for the current date, set calories to 0
+                                    Log.d("NutritionalInfo", "No nutritional data found for the current date.")
+                                    binding.CaloriesConsumed.text = "0 Kcal / ${dailyCalorieGoal.toInt()} Kcal"
                                 }
-
-                                // Update the UI with total calories consumed and calorie goal
-                                binding.CaloriesConsumed.text = "${totalCalories.toInt()} Kcal / ${dailyCalorieGoal.toInt()} Kcal"
-                            } else {
-                                Log.d("NutritionalInfo", "No data found for the current date.")
-                                binding.CaloriesConsumed.text = "0 Kcal / ${dailyCalorieGoal.toInt()} Kcal"
                             }
-                        }
 
-                        override fun onCancelled(error: DatabaseError) {
-                            Log.e("NutritionalInfo", "Failed to read data: ${error.message}")
-                        }
-                    })
-                }
+                            override fun onCancelled(error: DatabaseError) {
+                                Toast.makeText(this@HomeActivity, "Failed to read nutritional data", Toast.LENGTH_SHORT).show()
+                                Log.e("NutritionalInfo", "Failed to read nutritional data: ${error.message}")
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("UserGoals", "Failed to read user goals: ${error.message}")
-                }
-            })
+                            }
+                        })
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@HomeActivity, "Failed to fetch goals", Toast.LENGTH_SHORT).show()
+                        Log.e("UserGoals", "Failed to read user goals: ${error.message}")
+
+                    }
+                })
+            } else {
+                Toast.makeText(this@HomeActivity, "No authenticated user found. Cannot fetch calorie data.", Toast.LENGTH_SHORT).show()
+                Log.w("FirebaseAuth", "No authenticated user found. Cannot fetch calorie data.")
+
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this@HomeActivity, "An unexpected error occurred while fetching calorie data", Toast.LENGTH_SHORT).show()
+            Log.e("FetchCalories", "An unexpected error occurred while fetching calorie data", e)
+
         }
     }
+
 
 
     private fun fetchStepGoal() {
-        val currentUser = auth.currentUser?.uid
+        try {
+            // Get the current authenticated user's ID
+            val currentUser = auth.currentUser?.uid
 
-        if (currentUser != null) {
-            val userGoalsRef = database.child("goals")
-            userGoalsRef.child("stepGoal").addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val stepGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
-                    binding.circularProgressBar.progressMax = stepGoal.toFloat() // Set the max value of the progress bar
+            // Ensure the user is authenticated before fetching data
+            if (currentUser != null) {
+                // Reference to the user's goals in Firebase
+                val userGoalsRef = database.child("goals")
 
-                    // Since stepsTaken is loaded from Firebase, set the progress accordingly
-                    binding.circularProgressBar.setProgressWithAnimation(stepsTaken.toFloat())
-                }
+                // Fetch the step goal from Firebase
+                userGoalsRef.child("stepGoal").addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // Get the step goal from Firebase, or use a default value of 0 if not found
+                        val stepGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("Firebase", "Error fetching step goal: ${error.message}")
-                }
-            })
+                        // Set the max value of the progress bar to the fetched step goal
+                        binding.circularProgressBar.progressMax = stepGoal.toFloat()
+
+                        // Set the progress of the progress bar to the current number of steps taken
+                        binding.circularProgressBar.setProgressWithAnimation(stepsTaken.toFloat())
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@HomeActivity, "Error fetching step goal:", Toast.LENGTH_SHORT).show()
+                        Log.e("Firebase", "Error fetching step goal: ${error.message}")
+
+                    }
+                })
+            } else {
+               showToast("No authenticated user found. Cannot fetch step goal.")
+                Log.w("FirebaseAuth", "No authenticated user found. Cannot fetch step goal.")
+
+            }
+        } catch (e: Exception) {
+           showToast("An unexpected error occurred while fetching the step goal")
+            Log.e("FetchStepGoal", "An unexpected error occurred while fetching the step goal", e)
+
         }
     }
+
 
 
     private fun getCurrentDate(): String {

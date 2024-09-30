@@ -24,20 +24,21 @@ class NutritionDetails : AppCompatActivity() {
         binding = ActivityNutritionDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize Firebase Auth
+        // Initialize Firebase Authentication
         auth = FirebaseAuth.getInstance()
 
+        // Fetch user's calorie goal and display it
         fetchUserCalorieGoalAndDisplay()
 
-        // Fetch and display nutritional data
+        // Fetch and display nutritional data for the current user
         fetchAndDisplayNutritionalData()
-
-
     }
 
     private fun fetchAndDisplayNutritionalData() {
+        // Get the current user ID
         val currentUser = auth.currentUser?.uid
-        val currentDate = getCurrentDate() // Get the current date dynamically
+        // Get the current date dynamically
+        val currentDate = getCurrentDate()
 
         if (currentUser != null) {
             // Reference to the user's nutritional info in Firebase
@@ -45,6 +46,7 @@ class NutritionDetails : AppCompatActivity() {
 
             userNutritionalInfoRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    // Initialize total nutritional values
                     var totalCalories = 0.0
                     var totalCarbohydrates = 0.0
                     var totalFats = 0.0
@@ -59,6 +61,7 @@ class NutritionDetails : AppCompatActivity() {
 
                             // Loop through the individual meals under each meal type
                             for (entrySnapshot in mealTypeSnapshot.children) {
+                                // Safely retrieve values with null checks
                                 totalCalories += entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
                                 totalCarbohydrates += entrySnapshot.child("carbohydrates").getValue(Double::class.java) ?: 0.0
                                 totalFats += entrySnapshot.child("fat").getValue(Double::class.java) ?: 0.0
@@ -71,51 +74,33 @@ class NutritionDetails : AppCompatActivity() {
                         }
 
                         // Update the UI with total values
-                        binding.caloriesText.text = "Calories (${totalCalories.toInt()} kcal)"
-
-                        binding.caloriesProgress.progress = totalCalories.toInt()
-
-                        binding.carbohydratesText.text = "Carbohydrates (${totalCarbohydrates.toInt()} g)"
-                        binding.carbProgress.max = 300
-                        binding.carbProgress.progress = totalCarbohydrates.toInt()
-
-                        binding.fatText.text = "Fat (${totalFats.toInt()} g)"
-                        binding.fatProgress.max = 70
-                        binding.fatProgress.progress = totalFats.toInt()
-
-                        binding.proteinText.text = "Protein (${totalProteins.toInt()} g)"
-                        binding.proteinProgress.max = 50
-                        binding.proteinProgress.progress = totalProteins.toInt()
-
-                        binding.fiberText.text = "Fiber (${totalFibers.toInt()} g)"
-                        binding.fiberProgress.max = 30
-                        binding.fiberProgress.progress = totalFibers.toInt()
-
-                        binding.sugarsText.text = "Sugars (${totalSugars.toInt()} g)"
-                        binding.sugarsProgress.max = 50
-                        binding.sugarsProgress.progress = totalSugars.toInt()
-
+                        updateNutritionUI(totalCalories, totalCarbohydrates, totalFats, totalProteins, totalFibers, totalSugars)
                     } else {
-                        Toast.makeText(this@NutritionDetails, "No data found", Toast.LENGTH_SHORT).show()
+                        // Display a message if no data is found for the current date
+                        Toast.makeText(this@NutritionDetails, "No data found for today", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+                    // Log the error message if reading data fails
                     Log.e("NutritionalInfo", "Failed to read data: ${error.message}")
+                    Toast.makeText(this@NutritionDetails, "Error fetching nutritional data", Toast.LENGTH_SHORT).show()
                 }
             })
+        } else {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
 
-    //helper method to get current date
+    // Helper method to get the current date in the format "yyyy-MM-dd"
     private fun getCurrentDate(): String {
-        // Format the current date as yyyy-MM-dd
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return dateFormat.format(Date())
     }
 
     // Fetch user's calorie goal from Firebase and update the recommendation
     private fun fetchUserCalorieGoalAndDisplay() {
+        // Get the current user ID
         val currentUser = auth.currentUser?.uid
 
         if (currentUser != null) {
@@ -123,6 +108,7 @@ class NutritionDetails : AppCompatActivity() {
 
             userGoalsRef.child("calorieGoal").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    // Safely retrieve the calorie goal
                     val dailyCalorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 2500.0
                     // Update the recommended calories TextView with the user's goal
                     binding.caloriesRecommendation.text = "Recommended: ${dailyCalorieGoal.toInt()} kcal"
@@ -130,9 +116,40 @@ class NutritionDetails : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+                    // Log the error message if fetching the calorie goal fails
                     Log.e("UserGoals", "Failed to fetch calorie goal: ${error.message}")
+                    Toast.makeText(this@NutritionDetails, "Error fetching calorie goal", Toast.LENGTH_SHORT).show()
                 }
             })
+        } else {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    // Update the UI with the total nutritional values
+    private fun updateNutritionUI(totalCalories: Double, totalCarbohydrates: Double, totalFats: Double,
+                                  totalProteins: Double, totalFibers: Double, totalSugars: Double) {
+        binding.caloriesText.text = "Calories (${totalCalories.toInt()} kcal)"
+        binding.caloriesProgress.progress = totalCalories.toInt()
+
+        binding.carbohydratesText.text = "Carbohydrates (${totalCarbohydrates.toInt()} g)"
+        binding.carbProgress.max = 300
+        binding.carbProgress.progress = totalCarbohydrates.toInt()
+
+        binding.fatText.text = "Fat (${totalFats.toInt()} g)"
+        binding.fatProgress.max = 70
+        binding.fatProgress.progress = totalFats.toInt()
+
+        binding.proteinText.text = "Protein (${totalProteins.toInt()} g)"
+        binding.proteinProgress.max = 50
+        binding.proteinProgress.progress = totalProteins.toInt()
+
+        binding.fiberText.text = "Fiber (${totalFibers.toInt()} g)"
+        binding.fiberProgress.max = 30
+        binding.fiberProgress.progress = totalFibers.toInt()
+
+        binding.sugarsText.text = "Sugars (${totalSugars.toInt()} g)"
+        binding.sugarsProgress.max = 50
+        binding.sugarsProgress.progress = totalSugars.toInt()
     }
 }

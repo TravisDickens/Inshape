@@ -72,28 +72,49 @@ class BurntCaloriesDetailsActivity : AppCompatActivity() {
         })
     }
 
+    //method to fetch calories burnt from firebase
     private fun fetchCalorieData(date: String) {
         val userId = auth.currentUser?.uid.toString()
         database.child("users").child(userId).child("dailyData").child(date)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val calories = snapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                    try {
+                        if (snapshot.exists()) {
+                            val calories =
+                                snapshot.child("calories").getValue(Double::class.java) ?: 0.0
 
-                        // Display the calories in the TextView
-                        totalCaloriesTextView.text = "${calories.toInt()} Kcal"
+                            // Display the calories in the TextView
+                            totalCaloriesTextView.text = "${calories.toInt()} Kcal"
 
-                        // Optionally, update LineChart here
-                        updateLineChart(listOf(calories.toInt()))
+                            // Optionally, update LineChart here
+                            updateLineChart(listOf(calories.toInt()))
+                        } else {
+                            Toast.makeText(
+                                this@BurntCaloriesDetailsActivity,
+                                "No data available for today",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@BurntCaloriesDetailsActivity,
+                            "Error processing data: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@BurntCaloriesDetailsActivity, "Failed to fetch data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@BurntCaloriesDetailsActivity,
+                        "Failed to fetch data: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }
 
+    //method to fetch calorie data for the last 7 days
     private fun fetchWeeklyCalories() {
         val userId = auth.currentUser?.uid.toString()
         val caloriesPerWeek = mutableListOf<Int>()
@@ -105,22 +126,38 @@ class BurntCaloriesDetailsActivity : AppCompatActivity() {
             database.child("users").child(userId).child("dailyData").child(date)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val calories = snapshot.child("calories").getValue(Double::class.java) ?: 0.0
-                        caloriesPerWeek.add(calories.toInt())
+                        try {
+                            val calories =
+                                snapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                            caloriesPerWeek.add(calories.toInt())
 
-                        if (caloriesPerWeek.size == 7) {
-                            // Update LineChart with weekly data
-                            updateLineChart(caloriesPerWeek)
+                            if (caloriesPerWeek.size == 7) {
+                                // Update LineChart with weekly data
+                                updateLineChart(caloriesPerWeek)
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@BurntCaloriesDetailsActivity,
+                                "Error processing weekly data: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
-                    override fun onCancelled(error: DatabaseError) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(
+                            this@BurntCaloriesDetailsActivity,
+                            "Failed to fetch weekly data: ${error.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 })
             // Move to the previous day
             calendar.add(Calendar.DATE, -1)
         }
     }
 
+    //method to fetch calories burnt for the last 30 days
     private fun fetchMonthlyCalories() {
         val userId = auth.currentUser?.uid.toString()
         val caloriesPerMonth = mutableListOf<Int>()
@@ -132,16 +169,31 @@ class BurntCaloriesDetailsActivity : AppCompatActivity() {
             database.child("users").child(userId).child("dailyData").child(date)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val calories = snapshot.child("calories").getValue(Double::class.java) ?: 0.0
-                        caloriesPerMonth.add(calories.toInt())
+                        try {
+                            val calories =
+                                snapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                            caloriesPerMonth.add(calories.toInt())
 
-                        if (caloriesPerMonth.size == 30) {
-                            // Update LineChart with monthly data
-                            updateLineChart(caloriesPerMonth)
+                            if (caloriesPerMonth.size == 30) {
+                                // Update LineChart with monthly data
+                                updateLineChart(caloriesPerMonth)
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this@BurntCaloriesDetailsActivity,
+                                "Error processing monthly data: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
-                    override fun onCancelled(error: DatabaseError) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(
+                            this@BurntCaloriesDetailsActivity,
+                            "Failed to fetch monthly data: ${error.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 })
             // Move to the previous day
             calendar.add(Calendar.DATE, -1)
@@ -161,18 +213,36 @@ class BurntCaloriesDetailsActivity : AppCompatActivity() {
 
         // Create the data set with custom styling
         val dataSet = LineDataSet(entries, "Calories Burned").apply {
-            color = ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.my_secondary) // Line color
-            lineWidth = 2f // Line width
-            circleRadius = 5f // Circle radius for data points
-            setCircleColor(ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.white)) // Circle color
-            setCircleColorHole(ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.my_primary)) // Circle hole color
-            mode = LineDataSet.Mode.CUBIC_BEZIER // Use cubic bezier for smooth line
-            valueTextColor = ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.black) // Value text color
-            valueTextSize = 10f // Value text size
+            // Set line color
+            color = ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.my_secondary)
+            // Line width
+            lineWidth = 2f
+            // Circle radius for data points
+            circleRadius = 5f
+            // Circle color
+            setCircleColor(ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.white))
+            // Circle hole color
+            setCircleColorHole(
+                ContextCompat.getColor(
+                    this@BurntCaloriesDetailsActivity,
+                    R.color.my_primary
+                )
+            )
+            // Use cubic bezier for smooth line
+            mode = LineDataSet.Mode.CUBIC_BEZIER
+            // Value text color
+            valueTextColor =
+                ContextCompat.getColor(this@BurntCaloriesDetailsActivity, R.color.black)
+            // Value text size
+            valueTextSize = 10f
 
-            // Optional: Add a gradient fill
+            // Add a gradient fill
             setDrawFilled(true)
-            fillDrawable = ContextCompat.getDrawable(this@BurntCaloriesDetailsActivity, R.drawable.gradient_fill) // Custom gradient drawable
+            // Custom gradient drawable
+            fillDrawable = ContextCompat.getDrawable(
+                this@BurntCaloriesDetailsActivity,
+                R.drawable.gradient_fill
+            )
         }
 
         val lineData = LineData(dataSet)
@@ -180,19 +250,34 @@ class BurntCaloriesDetailsActivity : AppCompatActivity() {
         // Customize the chart appearance
         lineChart.apply {
             data = lineData
-            description.isEnabled = false // Disable description label
-            legend.isEnabled = false // Disable legend
-            setDrawGridBackground(false) // Disable grid background
-            setDrawBorders(false) // Disable borders
+            // Disable description label
+            description.isEnabled = false
+            // Disable legend
+            legend.isEnabled = false
+            // Disable grid background
+            setDrawGridBackground(false)
+            // Disable borders
+            setDrawBorders(false)
             xAxis.apply {
-                setDrawGridLines(false) // Disable grid lines on x-axis
-                position = XAxis.XAxisPosition.BOTTOM // Positioning of x-axis labels
+                // Disable grid lines on x-axis
+                setDrawGridLines(false)
+                // Positioning of x-axis labels
+                position = XAxis.XAxisPosition.BOTTOM
+                // Disable x axis
+                isEnabled = false
             }
             axisLeft.apply {
-                setDrawGridLines(false) // Disable grid lines on left y-axis
+                // Disable grid lines on left y-axis
+                setDrawGridLines(false)
             }
-            axisRight.isEnabled = false // Disable right y-axis
-            invalidate() // Refresh the chart
+            // Disable right y-axis
+            axisRight.isEnabled = false
+
+            // Refresh the chart
+            invalidate()
+
+            // Add animation when the data is set
+            animateX(1000) // Animation duration in milliseconds
         }
     }
 }

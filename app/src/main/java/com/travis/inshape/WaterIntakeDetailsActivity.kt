@@ -51,11 +51,16 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
             // Fetch water goal from Firebase
             userGoalsRef.child("waterGoal").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 2000 // Default to 2000 if null
+                    try {
+                        // Default to 0 if null
+                        val waterGoal = snapshot.getValue(String::class.java)?.toIntOrNull() ?: 0
 
-                    // Fetch the current day's water intake from Firebase
-                    val currentDate = getCurrentDate()
-                    fetchWaterIntakeForToday(currentUser, currentDate, waterGoal)
+                        // Fetch the current day's water intake from Firebase
+                        val currentDate = getCurrentDate()
+                        fetchWaterIntakeForToday(currentUser, currentDate, waterGoal)
+                    } catch (e: Exception) {
+                        Log.e("WaterIntakeDetails", "Error parsing water goal: ${e.message}")
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -72,22 +77,26 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
         database.child("dailywaterconsumption").child(currentUser).child(currentDate)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val waterIntake = snapshot.child("waterIntake").getValue(Int::class.java) ?: 0
-                        totalWaterIntake = waterIntake
+                    try {
+                        if (snapshot.exists()) {
+                            val waterIntake = snapshot.child("waterIntake").getValue(Int::class.java) ?: 0
+                            totalWaterIntake = waterIntake
 
-                        // Update UI with water intake and water goal
-                        binding.waterIntakeText.text = "$totalWaterIntake ml / $waterGoal ml"
+                            // Update UI with water intake and water goal
+                            binding.waterIntakeText.text = "$totalWaterIntake ml / $waterGoal ml"
 
-                        // Update progress bar
-                        binding.waterIntakeProgress.max = waterGoal
-                        binding.waterIntakeProgress.progress = totalWaterIntake
-                    } else {
-                        // Handle case where no water intake data is available for today
-                        totalWaterIntake = 0
-                        binding.waterIntakeText.text = "$totalWaterIntake ml / $waterGoal ml"
-                        binding.waterIntakeProgress.max = waterGoal
-                        binding.waterIntakeProgress.progress = totalWaterIntake
+                            // Update progress bar
+                            binding.waterIntakeProgress.max = waterGoal
+                            binding.waterIntakeProgress.progress = totalWaterIntake
+                        } else {
+                            // Handle case where no water intake data is available for today
+                            totalWaterIntake = 0
+                            binding.waterIntakeText.text = "$totalWaterIntake ml / $waterGoal ml"
+                            binding.waterIntakeProgress.max = waterGoal
+                            binding.waterIntakeProgress.progress = totalWaterIntake
+                        }
+                    } catch (e: Exception) {
+                        Log.e("WaterIntakeDetails", "Error fetching today's water intake: ${e.message}")
                     }
                 }
 
@@ -102,17 +111,21 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
 
         waterIntakeHistoryRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val entries = ArrayList<Entry>()
-                var index = 0
+                try {
+                    val entries = ArrayList<Entry>()
+                    var index = 0
 
-                for (dataSnapshot in snapshot.children) {
-                    val waterIntake = dataSnapshot.child("waterIntake").getValue(Int::class.java) ?: 0
-                    entries.add(Entry(index.toFloat(), waterIntake.toFloat()))
-                    index++
+                    for (dataSnapshot in snapshot.children) {
+                        val waterIntake = dataSnapshot.child("waterIntake").getValue(Int::class.java) ?: 0
+                        entries.add(Entry(index.toFloat(), waterIntake.toFloat()))
+                        index++
+                    }
+
+                    // Plot the chart
+                    plotChart(entries)
+                } catch (e: Exception) {
+                    Log.e("WaterIntakeDetails", "Error fetching water intake history: ${e.message}")
                 }
-
-                // Plot the chart
-                plotChart(entries)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -126,14 +139,20 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
         val dataSet = LineDataSet(entries, "Water Intake History").apply {
             color = resources.getColor(R.color.purple_200)
             valueTextColor = resources.getColor(R.color.black)
-            lineWidth = 3f // Increase line thickness
-            circleRadius = 5f // Circle indicators size
-            setCircleColor(resources.getColor(R.color.purple_500)) // Circle color
+            // Increase line thickness
+            lineWidth = 3f
+            // Circle indicators size
+            circleRadius = 5f
+            setCircleColor(resources.getColor(R.color.purple_500))
+            // Circle color
             setCircleColorHole(resources.getColor(R.color.white))
-            mode = LineDataSet.Mode.CUBIC_BEZIER // Smooth line
-            setDrawFilled(true) // Fill below the line
-            fillDrawable = ContextCompat.getDrawable(this@WaterIntakeDetailsActivity, R.drawable.gradient_fill) // Custom gradient drawable
-            fillAlpha = 80 // Transparency of the fill
+            // Smooth line
+            mode = LineDataSet.Mode.CUBIC_BEZIER
+            // Fill below the line
+            setDrawFilled(true)
+            fillDrawable = ContextCompat.getDrawable(this@WaterIntakeDetailsActivity, R.drawable.gradient_fill)
+            // Transparency of the fill
+            fillAlpha = 80
         }
 
         // Set data
@@ -142,20 +161,29 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
 
         // Customize the chart appearance
         lineChart.apply {
-            description.isEnabled = false // Disable description
-            legend.isEnabled = true // Show legend
+            description.isEnabled = false
+            // Show legend
+            legend.isEnabled = true
             axisLeft.apply {
-                setDrawGridLines(false) // Hide grid lines
-                textColor = resources.getColor(R.color.black) // Y-axis text color
-                axisMinimum = 0f // Minimum value
+                // Hide grid lines
+                setDrawGridLines(false)
+                // Y-axis text color
+                textColor = resources.getColor(R.color.black)
+                // Minimum value
+                axisMinimum = 0f
             }
-            axisRight.isEnabled = false // Disable right axis
+            // Disable right axis
+            axisRight.isEnabled = false
             xAxis.apply {
-                setDrawGridLines(false) // Hide grid lines
-                textColor = resources.getColor(R.color.black) // X-axis text color
-                position = XAxis.XAxisPosition.BOTTOM // Position at the bottom
+                // Hide grid lines
+                setDrawGridLines(false)
+                // X-axis text color
+                textColor = resources.getColor(R.color.black)
+                // Position at the bottom
+                position = XAxis.XAxisPosition.BOTTOM
             }
-            animateX(1000) // Animate the x-axis on loading
+            // Animate the x-axis on loading
+            animateX(1000)
         }
 
         // Refresh the chart
@@ -166,6 +194,7 @@ class WaterIntakeDetailsActivity : AppCompatActivity() {
     private fun getCurrentDate(): String {
         // Format the current date as yyyy-MM-dd
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date()) // Returns current date
+        // Returns current date
+        return dateFormat.format(Date())
     }
 }

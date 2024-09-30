@@ -51,10 +51,10 @@ class SettingsActivity : AppCompatActivity() {
         // Access the Switch using the ID
         val biometricSwitch = binding.biometricAuthenticationSwitch // Ensure the ID matches the XML
 
-// Set the initial state of the Switch based on shared preferences
+        // Set the initial state of the Switch based on shared preferences
         biometricSwitch.isChecked = sharedPreferences.getBoolean("biometric_enabled", false)
 
-// Set up the listener for the Switch
+        // Set up the listener for the Switch
         biometricSwitch.setOnCheckedChangeListener { _, isChecked ->
             // Save the new state in shared preferences
             with(sharedPreferences.edit()) {
@@ -94,7 +94,6 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
 
-
         // Display the logged-in user's email
         getLoggedInUserEmail()
 
@@ -108,7 +107,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Set onClickListener for profile image to change picture
         binding.profileImage.setOnClickListener {
-            openImagePicker() // Open the image picker dialog
+            // Open the image picker dialog
+            openImagePicker()
         }
 
         // Load profile image
@@ -119,7 +119,7 @@ class SettingsActivity : AppCompatActivity() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             val userEmail = currentUser.email
-            binding.userText.text = userEmail ?: "No Email"
+            binding.userText.text = userEmail ?: "No Email Availible"
         } else {
             binding.userText.text = "No User Logged In"
         }
@@ -153,8 +153,8 @@ class SettingsActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     Toast.makeText(this, "Goals saved successfully", Toast.LENGTH_SHORT).show()
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to save goals", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener { error ->
+                    Toast.makeText(this, "Failed to save goals: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
         } else {
             Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
@@ -167,7 +167,7 @@ class SettingsActivity : AppCompatActivity() {
         if (currentUser != null) {
             val userGoalsRef = database.child("users").child(currentUser.uid).child("goals")
 
-            userGoalsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            userGoalsRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
                         val stepGoal = snapshot.child("stepGoal").getValue(String::class.java)
@@ -183,7 +183,7 @@ class SettingsActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@SettingsActivity, "Failed to load goals", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, "Failed to load goals: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         } else {
@@ -206,7 +206,9 @@ class SettingsActivity : AppCompatActivity() {
 
         if (resultCode == Activity.RESULT_OK && requestCode == PICK_IMAGE) {
             val imageUri: Uri? = data?.data
-            imageUri?.let { uploadImageToFirebase(it) }
+            imageUri?.let { uploadImageToFirebase(it) } ?: run {
+                Toast.makeText(this, "Image selection failed", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -217,10 +219,14 @@ class SettingsActivity : AppCompatActivity() {
             fileRef.putFile(imageUri).addOnSuccessListener {
                 fileRef.downloadUrl.addOnSuccessListener { uri ->
                     saveImageUrlToDatabase(uri.toString())
+                }.addOnFailureListener { error ->
+                    Toast.makeText(this, "Failed to get download URL: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
-            }.addOnFailureListener {
-                Toast.makeText(this, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener { error ->
+                Toast.makeText(this, "Failed to upload image: ${error.message}", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -233,9 +239,11 @@ class SettingsActivity : AppCompatActivity() {
                 Toast.makeText(this, "Profile picture updated successfully", Toast.LENGTH_SHORT).show()
                 // Use Glide to update the image
                 Glide.with(this).load(imageUrl).into(binding.profileImage)
-            }.addOnFailureListener {
-                Toast.makeText(this, "Failed to update profile picture", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener { error ->
+                Toast.makeText(this, "Failed to update profile picture: ${error.message}", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -247,15 +255,19 @@ class SettingsActivity : AppCompatActivity() {
             databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val imageUrl = snapshot.getValue(String::class.java)
-                    imageUrl?.let {
-                        Glide.with(this@SettingsActivity).load(it).into(binding.profileImage)
+                    if (imageUrl != null) {
+                        Glide.with(this@SettingsActivity).load(imageUrl).into(binding.profileImage)
+                    } else {
+                        Toast.makeText(this@SettingsActivity, "No profile image found", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@SettingsActivity, "Failed to load profile image", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@SettingsActivity, "Failed to load profile image: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
+        } else {
+            Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
 }

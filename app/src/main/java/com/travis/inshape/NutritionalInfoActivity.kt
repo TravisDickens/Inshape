@@ -12,7 +12,7 @@ import java.util.*
 
 class NutritionalInfoActivity : AppCompatActivity() {
 
-    // Declare the binding variable
+    // Declare the binding variable for view binding
     private lateinit var binding: ActivityNutritionalInfoBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +22,7 @@ class NutritionalInfoActivity : AppCompatActivity() {
         binding = ActivityNutritionalInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Retrieve data from Intent
+        // Retrieve nutritional data from Intent extras
         val calories = intent.getDoubleExtra("calories", 0.0)
         val carbohydrates = intent.getDoubleExtra("carbohydrates", 0.0)
         val fat = intent.getDoubleExtra("fat", 0.0)
@@ -34,10 +34,10 @@ class NutritionalInfoActivity : AppCompatActivity() {
         val mealTime = intent.getStringExtra("meal_time")
         val grams = intent.getIntExtra("grams", 0)
 
-        // Display the retrieved data using ViewBinding
+        // Display the retrieved nutritional data
         displayNutritionalData(calories, carbohydrates, protein, fat, fibre, sugars, foodName, mealType, mealTime, grams)
 
-        // Save data to Firebase when save button is clicked
+        // Set an OnClickListener to save the nutritional data when the button is clicked
         binding.saveButton.setOnClickListener {
             saveNutritionalDataToFirebase(calories, carbohydrates, fat, protein, fibre, sugars, foodName, mealType, mealTime, grams)
         }
@@ -55,6 +55,7 @@ class NutritionalInfoActivity : AppCompatActivity() {
         mealTime: String?,
         grams: Int
     ) {
+        // Display nutritional values in the respective TextViews
         binding.caloriesText.text = "$calories"
         binding.carbohydratesText.text = "${carbohydrates}g"
         binding.proteinText.text = " ${protein}g"
@@ -67,6 +68,7 @@ class NutritionalInfoActivity : AppCompatActivity() {
         binding.gramsText.text = "$grams"
     }
 
+    //save info to firebase
     private fun saveNutritionalDataToFirebase(
         calories: Double,
         carbohydrates: Double,
@@ -105,16 +107,22 @@ class NutritionalInfoActivity : AppCompatActivity() {
         // Save the data under the current date node, within the meal type
         userRef.child(mealType).push().setValue(nutritionalData).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                // Show success message
                 Toast.makeText(this, "Data saved successfully", Toast.LENGTH_SHORT).show()
 
                 // Redirect to HomeActivity
-                val intent = Intent(this, HomeActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                val intent = Intent(this, HomeActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
                 startActivity(intent)
                 finish()
             } else {
-                Toast.makeText(this, "Failed to save data", Toast.LENGTH_SHORT).show()
+                // Show failure message
+                Toast.makeText(this, "Failed to save data: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
             }
+        }.addOnFailureListener { exception ->
+            // Handle any errors that occur during the save operation
+            Toast.makeText(this, "Error occurred: ${exception.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

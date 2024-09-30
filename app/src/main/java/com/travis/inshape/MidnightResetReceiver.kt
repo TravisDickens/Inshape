@@ -14,6 +14,7 @@ class MidnightResetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
             val activity = context as? HomeActivity
-            activity?.resetSteps() // Call resetSteps method to reset steps at midnight
+             // Call resetSteps method to reset steps at midnight
+            activity?.resetSteps()
         }
     }
