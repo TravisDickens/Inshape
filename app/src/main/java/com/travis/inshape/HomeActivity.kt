@@ -19,6 +19,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -47,11 +48,15 @@ class HomeActivity : Base(), SensorEventListener {
     // Firebase references
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
+    private lateinit var weightViewModel: WeightViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        weightViewModel = ViewModelProvider(this).get(WeightViewModel::class.java)
 
         requestActivityRecognitionPermission()
         requestNotificationPermission()
@@ -139,54 +144,75 @@ class HomeActivity : Base(), SensorEventListener {
     }
 
     private fun checkCalorieGoal() {
-        val userId = auth.currentUser?.uid ?: return
-        val calorieGoalRef = database.child("users").child(userId).child("goals").child("calorieGoal")
+        val currentDate = getCurrentDate()
 
+        // Reference to user's goals and nutritional info in Firebase
+        val calorieGoalRef = database.child("goals").child("calorieGoal")
+        val nutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
+
+        // Fetch calorie goal
         calorieGoalRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val calorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+                // Fetch calorie goal as either a String or Double, and convert it to Double safely
+                val calorieGoal = try {
+                    snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+                } catch (e: Exception) {
+                    snapshot.getValue(Double::class.java) ?: 0.0
+                }
 
-                // Fetch current calories consumed
-                val currentDate = getCurrentDate()
-                database.child("users").child(userId).child("nutritionalInfo").child(currentDate).addListenerForSingleValueEvent(object : ValueEventListener {
+                // Fetch calories consumed for the current date
+                nutritionalInfoRef.addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         var totalCalories = 0.0
-                        for (meal in snapshot.children) {
-                            totalCalories += meal.child("calories").getValue(Double::class.java) ?: 0.0
-                        }
 
-                        // Send notification if 80% of goal is reached
-                        if (totalCalories >= 0.8 * calorieGoal) {
-                            NotificationUtils.sendNotification(this@HomeActivity, "Calorie Alert", "You've reached 80% of your daily calorie goal!")
+                        if (snapshot.exists()) {
+                            // Loop through each meal and sum the calories
+                            for (mealSnapshot in snapshot.children) {
+                                for (entrySnapshot in mealSnapshot.children) {
+                                    val calories = try {
+                                        entrySnapshot.child("calories").getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+                                    } catch (e: Exception) {
+                                        entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                                    }
+                                    totalCalories += calories
+                                }
+                            }
+
+                            Log.d("CalorieCheck", "Total Calories: $totalCalories, Calorie Goal: $calorieGoal, 80% Goal: ${0.8 * calorieGoal}")
+
+                            // Send notification if 80% of the goal is reached
+                            if (totalCalories >= 0.8 * calorieGoal) {
+                                NotificationUtils.sendNotification(this@HomeActivity, "Calorie Alert", "You've reached 80% of your daily calorie goal!")
+                            }
+                        } else {
+                            Log.d("CalorieCheck", "No nutritional data found for the current date.")
                         }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-                        Log.e("CalorieCheck", "Error: ${error.message}")
+                        Log.e("CalorieCheck", "Failed to read nutritional data: ${error.message}")
                     }
                 })
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("CalorieGoal", "Error: ${error.message}")
+                Log.e("CalorieGoal", "Failed to read calorie goal: ${error.message}")
             }
         })
     }
+
     private fun scheduleDailyMotivationalQuote() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, MotivationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        // Set the initial trigger time to the current time plus 30 seconds
-        val triggerTime = System.currentTimeMillis() + 30000 // 30 seconds in milliseconds
-
-        // Set the repeating interval to 30 seconds
-        val interval = 60000L // 30 seconds in milliseconds
+        // Set the initial trigger time to the current time plus 1 hour
+        val triggerTime = System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR
 
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             triggerTime,
-            interval,
+            AlarmManager.INTERVAL_HOUR,
             pendingIntent
         )
     }
@@ -504,10 +530,16 @@ class HomeActivity : Base(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
+
+        // Check if the sensor is not running and register the sensor listener
         if (!running) {
             registerSensorListener()
         }
+
+        // Sync unsynced weights with Firestore
+        weightViewModel.syncUnsyncedWeights()
     }
+
 
 
     override fun onSensorChanged(event: SensorEvent?) {

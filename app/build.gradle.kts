@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt")
     id("com.google.gms.google-services")
 }
 
@@ -45,6 +46,21 @@ dependencies {
 
 
     implementation("com.google.firebase:firebase-messaging-ktx:24.0.2")
+    // Room components
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    // Coroutine support for Room
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
+
+    // LiveData components
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0") // For LiveData
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0") // For ViewModel
+
+
 
 
     implementation("androidx.core:core-ktx:1.9.0")
