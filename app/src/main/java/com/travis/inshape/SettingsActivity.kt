@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -13,6 +14,7 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -23,6 +25,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.travis.inshape.databinding.ActivitySettingsBinding
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
@@ -200,67 +203,99 @@ class SettingsActivity : AppCompatActivity() {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
-            // Get values from the TextInputEditTexts
             val stepGoal = binding.stepsGoalInput.text.toString().trim()
             val waterGoal = binding.waterGoalInput.text.toString().trim()
             val calorieGoal = binding.calorieGoalInput.text.toString().trim()
 
-            // Input validation
             if (stepGoal.isEmpty() || waterGoal.isEmpty() || calorieGoal.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return
             }
 
-            // Create a map to store the goals
             val userGoals = mapOf(
                 "stepGoal" to stepGoal,
                 "waterGoal" to waterGoal,
                 "calorieGoal" to calorieGoal
             )
 
-            // Save the goals under the current user's node in Firebase
+            // Save to Firebase
             database.child("users").child(currentUser.uid).child("goals")
                 .setValue(userGoals)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Goals saved successfully", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Goals saved to Firebase", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { error ->
                     Toast.makeText(this, "Failed to save goals: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
+
+            // Save locally to Room database
+            val goal = Goal(stepGoal = stepGoal, waterGoal = waterGoal, calorieGoal = calorieGoal)
+            lifecycleScope.launch {
+                GoalDatabase.getDatabase(this@SettingsActivity).goalDao().insertGoal(goal)
+                Toast.makeText(this@SettingsActivity, "Goals saved locally", Toast.LENGTH_SHORT).show() // Local storage toast
+            }
         } else {
             Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
     private fun loadUserGoals() {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
-            val userGoalsRef = database.child("users").child(currentUser.uid).child("goals")
+            // Check if the app is online
+            if (isOnline()) {
+                // Fetch from Firebase
+                val userGoalsRef = database.child("users").child(currentUser.uid).child("goals")
 
-            userGoalsRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val stepGoal = snapshot.child("stepGoal").getValue(String::class.java)
-                        val waterGoal = snapshot.child("waterGoal").getValue(String::class.java)
-                        val calorieGoal = snapshot.child("calorieGoal").getValue(String::class.java)
+                userGoalsRef.addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            val stepGoal = snapshot.child("stepGoal").getValue(String::class.java)
+                            val waterGoal = snapshot.child("waterGoal").getValue(String::class.java)
+                            val calorieGoal = snapshot.child("calorieGoal").getValue(String::class.java)
 
-                        binding.stepsGoalInput.setText(stepGoal ?: "")
-                        binding.waterGoalInput.setText(waterGoal ?: "")
-                        binding.calorieGoalInput.setText(calorieGoal ?: "")
-                    } else {
-                        Toast.makeText(this@SettingsActivity, "No goals found", Toast.LENGTH_SHORT).show()
+                            binding.stepsGoalInput.setText(stepGoal ?: "")
+                            binding.waterGoalInput.setText(waterGoal ?: "")
+                            binding.calorieGoalInput.setText(calorieGoal ?: "")
+
+                            // Save to Room DB
+                            val goal = Goal(stepGoal = stepGoal ?: "", waterGoal = waterGoal ?: "", calorieGoal = calorieGoal ?: "")
+                            lifecycleScope.launch {
+                                GoalDatabase.getDatabase(this@SettingsActivity).goalDao().insertGoal(goal)
+                            }
+                        } else {
+                            Toast.makeText(this@SettingsActivity, "No goals found", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@SettingsActivity, "Failed to load goals: ${error.message}", Toast.LENGTH_SHORT).show()
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@SettingsActivity, "Failed to load goals: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            } else {
+                // Fetch from Room DB
+                lifecycleScope.launch {
+                    val goal = GoalDatabase.getDatabase(this@SettingsActivity).goalDao().getGoals()
+                        .collect { localGoal ->
+                            localGoal?.let {
+                                binding.stepsGoalInput.setText(it.stepGoal)
+                                binding.waterGoalInput.setText(it.waterGoal)
+                                binding.calorieGoalInput.setText(it.calorieGoal)
+                            } ?: run {
+                                Toast.makeText(this@SettingsActivity, "No offline data found", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                 }
-            })
+            }
         } else {
             Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
     private fun openImagePicker() {
         // Directly open the gallery to choose an image
@@ -337,7 +372,11 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
     }
-
+    private fun isOnline(): Boolean {
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        return activeNetwork != null && activeNetwork.isConnected
+    }
     override fun onBackPressed() {
         // Call the super method to ensure proper back button behavior
         super.onBackPressed()

@@ -134,7 +134,7 @@ class HomeActivity : Base(), SensorEventListener {
         val intent = Intent(this, HydrationReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        val interval = AlarmManager.INTERVAL_HOUR * 2 // Remind every 2 hours
+        val interval = AlarmManager.INTERVAL_HOUR * 2
         alarmManager.setInexactRepeating(
             AlarmManager.RTC_WAKEUP,
             System.currentTimeMillis() + interval,
