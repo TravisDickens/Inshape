@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
 
     <uses-feature
         android:name="android.hardware.fingerprint"
@@ -25,6 +31,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.INSHAPE"
         tools:targetApi="31">
+        <activity
+            android:name=".ChatBotActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TrackWeightActivity"
+            android:exported="false" />
         <activity
             android:name=".BurntCaloriesDetailsActivity"
             android:exported="false" />
@@ -51,6 +63,10 @@
             android:exported="false" />
 
         <receiver android:name=".MidnightResetReceiver" />
+        <receiver android:name=".HydrationReminderReceiver" />
+        <receiver android:name=".MotivationReceiver" />
+        <receiver android:name=".MealReminderReceiver" />
+
 
         <activity
             android:name=".HomeActivity"
@@ -70,6 +86,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
     </application>
+
 
 </manifest>

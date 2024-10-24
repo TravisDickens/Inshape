@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.Executor
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : Base() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var auth: FirebaseAuth
     private var oneTapClient: SignInClient? = null

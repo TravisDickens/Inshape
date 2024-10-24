@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- item_message.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- User Message -->
+    <TextView
+        android:id="@+id/user_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/user_message_background"
+        android:textColor="@android:color/white"
+        android:padding="8dp"
+        android:layout_gravity="end"
+        android:visibility="gone" />
+
+    <!-- Chatbot Response -->
+    <TextView
+        android:id="@+id/chatbot_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chatbot_message_background"
+    android:textColor="@android:color/black"
+    android:padding="8dp"
+    android:layout_gravity="start" />
+</LinearLayout>

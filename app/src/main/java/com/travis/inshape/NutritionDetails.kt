@@ -13,7 +13,7 @@ import com.travis.inshape.databinding.ActivityNutritionDetailsBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NutritionDetails : AppCompatActivity() {
+class NutritionDetails : Base() {
 
     private lateinit var binding: ActivityNutritionDetailsBinding
     private val database = FirebaseDatabase.getInstance().reference.child("users")

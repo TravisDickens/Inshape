@@ -10,7 +10,7 @@ import com.travis.inshape.databinding.ActivityNutritionalInfoBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NutritionalInfoActivity : AppCompatActivity() {
+class NutritionalInfoActivity : Base() {
 
     // Declare the binding variable for view binding
     private lateinit var binding: ActivityNutritionalInfoBinding

@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Base() {
 
     private val DisplayLength = 3000 // 3 seconds
     private lateinit var sharedPreferences: SharedPreferences

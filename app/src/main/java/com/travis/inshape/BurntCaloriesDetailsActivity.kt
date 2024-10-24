@@ -23,7 +23,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class BurntCaloriesDetailsActivity : AppCompatActivity() {
+class BurntCaloriesDetailsActivity : Base() {
 
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth

@@ -23,7 +23,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class StepDetailsActivity : AppCompatActivity() {
+class StepDetailsActivity : Base() {
 
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth

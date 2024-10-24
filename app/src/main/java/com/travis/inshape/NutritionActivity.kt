@@ -13,7 +13,7 @@ import com.google.android.material.button.MaterialButton
 import com.travis.inshape.databinding.ActivityNutritionBinding
 import kotlinx.coroutines.launch
 
-class NutritionActivity : AppCompatActivity() {
+class NutritionActivity : Base() {
 
     lateinit var binding: ActivityNutritionBinding
     private val mealTypes = listOf("Breakfast", "Lunch", "Supper")

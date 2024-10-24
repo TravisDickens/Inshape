@@ -1,10 +1,13 @@
 package com.travis.inshape
 
+import android.app.AlarmManager
 import android.app.Dialog
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -13,15 +16,21 @@ import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.google.firebase.messaging.FirebaseMessaging
 import com.travis.inshape.databinding.ActivityHomeBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class HomeActivity : AppCompatActivity(), SensorEventListener {
+class HomeActivity : Base(), SensorEventListener {
 
     private var totalWaterIntake = 0
     private var sensorManager: SensorManager? = null
@@ -31,6 +40,7 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
     private var stepsTaken = 0
     private var isFirstSensorEvent = true
     private val ACTIVITY_RECOGNITION_REQUEST_CODE = 1
+    private  val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     private var caloriesBurned = 0.0
     private var lastUpdatedDate: String? = null
     private lateinit var binding: ActivityHomeBinding
@@ -44,6 +54,8 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
         setContentView(binding.root)
 
         requestActivityRecognitionPermission()
+        requestNotificationPermission()
+
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -97,9 +109,126 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
         // Fetch and set the step goal
         fetchStepGoal()
+
+        //load weight graph
+        loadWeightData()
+
+        if (!isAlarmSet(this, 0)) {
+            scheduleHydrationReminder()
+            checkCalorieGoal()
+            scheduleDailyMotivationalQuote()
+            scheduleMealReminders()
+        }
+
+
     }
 
 
+    private fun scheduleHydrationReminder() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, HydrationReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val interval = AlarmManager.INTERVAL_HOUR * 2 // Remind every 2 hours
+        alarmManager.setInexactRepeating(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + interval,
+            interval,
+            pendingIntent
+        )
+    }
+
+    private fun checkCalorieGoal() {
+        val userId = auth.currentUser?.uid ?: return
+        val calorieGoalRef = database.child("users").child(userId).child("goals").child("calorieGoal")
+
+        calorieGoalRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val calorieGoal = snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+
+                // Fetch current calories consumed
+                val currentDate = getCurrentDate()
+                database.child("users").child(userId).child("nutritionalInfo").child(currentDate).addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        var totalCalories = 0.0
+                        for (meal in snapshot.children) {
+                            totalCalories += meal.child("calories").getValue(Double::class.java) ?: 0.0
+                        }
+
+                        // Send notification if 80% of goal is reached
+                        if (totalCalories >= 0.8 * calorieGoal) {
+                            NotificationUtils.sendNotification(this@HomeActivity, "Calorie Alert", "You've reached 80% of your daily calorie goal!")
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("CalorieCheck", "Error: ${error.message}")
+                    }
+                })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("CalorieGoal", "Error: ${error.message}")
+            }
+        })
+    }
+    private fun scheduleDailyMotivationalQuote() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, MotivationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // Set the initial trigger time to the current time plus 30 seconds
+        val triggerTime = System.currentTimeMillis() + 30000 // 30 seconds in milliseconds
+
+        // Set the repeating interval to 30 seconds
+        val interval = 60000L // 30 seconds in milliseconds
+
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            interval,
+            pendingIntent
+        )
+    }
+
+    private fun scheduleMealReminders() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, MealReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // Set reminders for 8 AM, 12 PM, and 6 PM
+        val mealTimes = listOf(8, 12, 18) // 8 AM, 12 PM, and 6 PM
+
+        for (hour in mealTimes) {
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+
+                // If the time is before the current time, set for the next day
+                if (timeInMillis < System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            // Set the alarm
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                AlarmManager.INTERVAL_DAY,
+                pendingIntent
+            )
+        }
+    }
+
+
+    private fun isAlarmSet(context: Context, requestCode: Int): Boolean {
+        val intent = Intent(context, HydrationReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
+        return pendingIntent != null
+    }
 
 
 
@@ -111,8 +240,8 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                     // Already on HomeActivity, no action needed
                     true
                 }
-                R.id.Food -> {
-                    val intent = Intent(this, NutritionActivity::class.java)
+                R.id.videos -> {
+                    val intent = Intent(this, VideosActivity::class.java)
                     startActivity(intent)
                     true
                 }
@@ -121,8 +250,8 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
                     startActivity(intent)
                     true
                 }
-                R.id.videos -> {
-                    val intent = Intent(this, VideosActivity::class.java)
+                R.id.ChatBot -> {
+                    val intent = Intent(this, ChatBotActivity::class.java)
                     startActivity(intent)
                     true
                 }
@@ -140,22 +269,80 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
 
 
     private fun showBottomDialog() {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.bottomsheetlayout)
-        val weightLayout = dialog.findViewById<LinearLayout>(R.id.weightlayout)
+        val bottomSheetDialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottomsheetlayout, null)
 
+        bottomSheetDialog.setContentView(view)
+
+        // Handle the click on the weight layout
+        val weightLayout = view.findViewById<TextView>(R.id.weightlayout)
+        val inputCalories = view.findViewById<TextView>(R.id.NutritionLayout)
         weightLayout.setOnClickListener {
-            showToast("Coming soon")
+            val intent = Intent(this, TrackWeightActivity::class.java)
+            startActivity(intent)
+            true
         }
 
-        dialog.show()
-        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
-        dialog.window?.attributes?.windowAnimations = com.google.android.material.R.style.MaterialAlertDialog_Material3_Animation
-        dialog.window?.setGravity(android.view.Gravity.BOTTOM)
+        inputCalories.setOnClickListener {
+            val intent = Intent(this, NutritionActivity::class.java)
+            startActivity(intent)
+            true
+        }
+
+        // Set transparent background if needed
+        bottomSheetDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        bottomSheetDialog.show()
     }
 
+
+    private fun loadWeightData() {
+        val userId = auth.currentUser?.uid
+
+        if (userId != null) {
+            database.child("WeightData")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val weightEntries = ArrayList<Entry>()
+                        var index = 0f
+
+                        // Check if data exists
+                        if (snapshot.exists()) {
+                            for (weightSnapshot in snapshot.children) {
+                                // Access the nested "weight" value inside the random key node
+                                val weight = weightSnapshot.child("weight").getValue(String::class.java)
+                                    ?.toFloatOrNull()
+
+                                if (weight != null) {
+                                    weightEntries.add(Entry(index++, weight))
+                                }
+                            }
+
+                            // Check if entries are not empty
+                            if (weightEntries.isNotEmpty()) {
+                                val lineDataSet = LineDataSet(weightEntries, "Weight Progress")
+                                val lineData = LineData(lineDataSet)
+                                binding.lineChart.data = lineData
+                                binding.lineChart.invalidate() // Refresh the chart
+                            } else {
+                                // Handle case where no weight entries were found
+                                binding.lineChart.clear()
+                                Toast.makeText(this@HomeActivity, "No weight data available", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            // Handle case where snapshot doesn't exist
+                            binding.lineChart.clear()
+                            Toast.makeText(this@HomeActivity, "No data found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        // Handle error
+                        Toast.makeText(this@HomeActivity, "Error loading data", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
+    }
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -270,21 +457,49 @@ class HomeActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    private fun requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == ACTIVITY_RECOGNITION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, start tracking steps
-                Toast.makeText(this, "Activity Recognition Permission Granted", Toast.LENGTH_SHORT).show()
-                registerSensorListener()
-            } else {
-                Toast.makeText(this, "Activity Recognition Permission Denied", Toast.LENGTH_SHORT).show()
+
+        when (requestCode) {
+            ACTIVITY_RECOGNITION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, start tracking steps
+                    Toast.makeText(this, "Activity Recognition Permission Granted", Toast.LENGTH_SHORT).show()
+                    registerSensorListener()
+                } else {
+                    Toast.makeText(this, "Activity Recognition Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Notification permission granted
+                    Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
+
+
+
+
+
+
 
 
     override fun onResume() {

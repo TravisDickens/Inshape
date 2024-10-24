@@ -3,9 +3,14 @@ package com.travis.inshape
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -18,6 +23,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.travis.inshape.databinding.ActivitySettingsBinding
+import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -29,6 +35,9 @@ class SettingsActivity : AppCompatActivity() {
     private val PICK_IMAGE = 100
     private lateinit var storageReference: StorageReference
 
+    private var currantLang: String = "en"
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,7 +45,52 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize FirebaseAuth
+        // Set default language
+        currantLang = Locale.getDefault().language
+
+        // Initialize shared preferences
+        sharedPreferences = getSharedPreferences("InShapePrefs", MODE_PRIVATE)
+
+        // Load the saved language from SharedPreferences
+        val savedLang = sharedPreferences.getString("language", "en") // Default is English
+        setLocale(savedLang ?: "en") // Ensure the locale is set
+
+        val spinner: Spinner = findViewById(R.id.spinner)
+        val langs = arrayOf("English", "Afrikaans", "Zulu")
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, langs)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+
+        // Set the spinner position based on the saved language
+        val selectedPosition = when (savedLang) {
+            "af" -> 1
+            "zu" -> 2
+            else -> 0
+        }
+        spinner.setSelection(selectedPosition)
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
+            ) {
+                val selectedLang = when (position) {
+                    0 -> "en"
+                    1 -> "af"
+                    2 -> "zu"
+                    else -> "en"
+                }
+                // Save the selected language to SharedPreferences
+                sharedPreferences.edit().putString("language", selectedLang).apply()
+                setLocale(selectedLang)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Do nothing
+            }
+
+        }
+            // Initialize FirebaseAuth
         auth = FirebaseAuth.getInstance()
 
         // Initialize Firebase Database
@@ -45,8 +99,6 @@ class SettingsActivity : AppCompatActivity() {
         // Initialize Firebase Storage
         storageReference = FirebaseStorage.getInstance().reference
 
-        // Initialize shared preferences
-        sharedPreferences = getSharedPreferences("InShapePrefs", MODE_PRIVATE)
 
         // Access the Switch using the ID
         val biometricSwitch = binding.biometricAuthenticationSwitch // Ensure the ID matches the XML
@@ -114,6 +166,25 @@ class SettingsActivity : AppCompatActivity() {
         // Load profile image
         loadProfileImage()
     }
+
+    private fun setLocale(lang: String) {
+        if (lang != currantLang) {
+            currantLang = lang
+
+            val locale = Locale(lang)
+            Locale.setDefault(locale)
+            val config = Configuration()
+            config.setLocale(locale)
+
+            // Apply the new configuration
+            val context = createConfigurationContext(config)
+            resources.updateConfiguration(config, context.resources.displayMetrics)
+
+            // Recreate the activity to apply the new language
+            recreate()
+        }
+    }
+
 
     private fun getLoggedInUserEmail() {
         val currentUser = auth.currentUser
@@ -255,10 +326,8 @@ class SettingsActivity : AppCompatActivity() {
             databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val imageUrl = snapshot.getValue(String::class.java)
-                    if (imageUrl != null) {
+                    if (imageUrl != null && !isDestroyed && !isFinishing) {
                         Glide.with(this@SettingsActivity).load(imageUrl).into(binding.profileImage)
-                    } else {
-                        Toast.makeText(this@SettingsActivity, "No profile image found", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -266,8 +335,14 @@ class SettingsActivity : AppCompatActivity() {
                     Toast.makeText(this@SettingsActivity, "Failed to load profile image: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
-        } else {
-            Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onBackPressed() {
+        // Call the super method to ensure proper back button behavior
+        super.onBackPressed()
+
+        // You can add additional logic here if needed, like saving other preferences
+        finish() // Finish the activity when back is pressed
     }
 }

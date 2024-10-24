@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.travis.inshape.databinding.ActivityRegisterBinding
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : Base() {
 
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var auth: FirebaseAuth

@@ -9,7 +9,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
-class VideosActivity : AppCompatActivity() {
+class VideosActivity : Base() {
     private lateinit var youTubePlayerView: YouTubePlayerView
     private var youTubePlayer: YouTubePlayer? = null
     private var pendingVideoId: String? = null

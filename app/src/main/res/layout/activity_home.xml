@@ -215,7 +215,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card 7: Graph Display
+            <!-- Graph CardView -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -232,26 +232,24 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <ImageView
-                        android:layout_width="300dp"
-                        android:layout_height="200dp"
-                        android:contentDescription="Graph Display"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/graph" />
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:paddingTop="8dp"
-                        android:text=" Progress"
+                        android:text="Weight Progress"
                         android:textColor="@color/black"
                         android:textSize="24sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
--->
+
         </LinearLayout>
     </ScrollView>
 

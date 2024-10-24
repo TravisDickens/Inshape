@@ -15,7 +15,7 @@ import com.travis.inshape.databinding.ActivityWaterIntakeDetailsBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class WaterIntakeDetailsActivity : AppCompatActivity() {
+class WaterIntakeDetailsActivity : Base() {
 
     private lateinit var binding: ActivityWaterIntakeDetailsBinding
     private lateinit var auth: FirebaseAuth
