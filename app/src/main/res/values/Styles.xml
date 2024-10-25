@@ -5,4 +5,9 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <!-- Custom dialog theme -->
+    <style name="CustomAlertDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="backgroundColor">@android:color/white</item>
+        <item name="android:textColorPrimary">@android:color/black</item>
+    </style>
 </resources>

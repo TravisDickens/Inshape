@@ -1,7 +1,10 @@
 package com.travis.inshape
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
@@ -10,11 +13,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class ChatBotActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBotBinding
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var questions: List<QuestionAnswer>
+    val REQUEST_CODE_VOICE_INPUT = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,14 +43,27 @@ class ChatBotActivity : AppCompatActivity() {
         binding.sendButton.setOnClickListener {
             handleSendButtonClick()
         }
+
+        // Set up voice input button listener
+        binding.vBtn.setOnClickListener {
+            startVoiceInput()
+        }
     }
 
     private fun handleSendButtonClick() {
         val userInput = binding.messageEditText.text.toString()
 
         if (userInput.isNotBlank()) {
-            chatAdapter.addMessage(ChatMessage(userInput, isUser = true))
+            addMessageToChat(userInput, true)
+            binding.messageEditText.text?.clear()
+        }
+    }
 
+    private fun addMessageToChat(message: String, isUser: Boolean) {
+        chatAdapter.addMessage(ChatMessage(message, isUser))
+        binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
+
+        if (isUser) {
             // Show typing indicator
             chatAdapter.addMessage(ChatMessage("Chatbot is typing...", isUser = false))
             binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
@@ -53,18 +71,42 @@ class ChatBotActivity : AppCompatActivity() {
             // Simulate delay before the chatbot replies
             CoroutineScope(Dispatchers.Main).launch {
                 delay(1500)
-                val chatbotResponse = getAnswer(userInput, questions)
+                val chatbotResponse = getAnswer(message, questions)
 
                 // Remove typing indicator and add actual chatbot message
                 chatAdapter.removeLastMessage()
                 chatAdapter.addMessage(ChatMessage(chatbotResponse, isUser = false))
                 binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
             }
-
-            binding.messageEditText.text?.clear()
         }
     }
 
+    private fun startVoiceInput() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your question")
+        }
+
+        try {
+
+            startActivityForResult(intent, REQUEST_CODE_VOICE_INPUT)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Speech input is not supported on this device.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_VOICE_INPUT && resultCode == RESULT_OK) {
+            val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            result?.let {
+                addMessageToChat(it[0], true) 
+            }
+        }
+    }
+
+    // Existing methods...
 
     fun loadJSONFromAsset(context: Context, fileName: String): String? {
         return try {
@@ -79,6 +121,7 @@ class ChatBotActivity : AppCompatActivity() {
             null
         }
     }
+
 
     fun getAnswer(userInput: String, questions: List<QuestionAnswer>): String {
         val normalizedInput = normalizeInput(userInput)
@@ -114,7 +157,8 @@ class ChatBotActivity : AppCompatActivity() {
         return if (minDistance <= 5 && bestMatch != null) {
             bestMatch.answer
         } else {
-            "Sorry, I don't have an answer for that question."
+            // Provide a follow-up question if the response is generic
+            "I'm not sure about that. Can you provide more details?"
         }
     }
 

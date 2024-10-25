@@ -22,10 +22,12 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:titleTextColor="@color/white"
+            app:titleTextColor="@android:color/white"
             app:title="Chat Bot"
             app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
-            android:background="@color/purple_500"/>
+            android:background="@color/purple_500"
+            app:layout_scrollFlags="scroll|enterAlways"
+            android:elevation="4dp"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- RecyclerView for displaying chat messages -->
@@ -35,9 +37,11 @@
         android:layout_height="0dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintTop_toBottomOf="@id/appBar"
-    app:layout_constraintBottom_toTopOf="@id/messageInputLayout"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@id/messageInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@android:color/transparent"
+        android:elevation="2dp"/>
 
     <!-- Input field for typing the message -->
     <com.google.android.material.textfield.TextInputLayout
@@ -47,7 +51,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="8dp">
+        android:padding="8dp"
+        app:boxStrokeColor="@color/purple_500"
+        app:hintEnabled="true"
+        app:hintTextColor="@color/purple_500"
+        app:boxBackgroundMode="outline"
+        app:boxStrokeWidth="2dp"
+        app:boxCornerRadiusTopStart="20dp"
+        app:boxCornerRadiusTopEnd="20dp"
+        app:boxCornerRadiusBottomStart="20dp"
+        app:boxCornerRadiusBottomEnd="20dp"
+        android:elevation="2dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/messageEditText"
@@ -55,6 +69,10 @@
             android:layout_height="wrap_content"
             android:hint="Ask a question..."
             android:inputType="text"
+            android:textColorHint="@color/purple_500"
+            android:padding="16dp"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@android:color/black"
             tools:ignore="TouchTargetSizeCheck"/>
 
         <com.google.android.material.button.MaterialButton
@@ -63,7 +81,31 @@
             android:layout_height="wrap_content"
             android:text="Send"
             android:layout_gravity="end"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            android:backgroundTint="@color/black"
+            android:textColor="@android:color/white"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:elevation="4dp"/>
+
+
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/vBtn"
+        android:layout_width="72dp"
+        android:layout_height="49dp"
+        android:layout_gravity="end"
+        android:background="@drawable/baseline_mic_24"
+        android:backgroundTint="@color/black"
+        android:elevation="4dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="SpeakableTextPresentCheck" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

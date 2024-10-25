@@ -1,7 +1,7 @@
 package com.travis.inshape
 
 import android.app.AlarmManager
-import android.app.Dialog
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -12,24 +12,31 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
-import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.travis.inshape.databinding.ActivityHomeBinding
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class HomeActivity : Base(), SensorEventListener {
 
@@ -49,6 +56,7 @@ class HomeActivity : Base(), SensorEventListener {
     private lateinit var database: DatabaseReference
     private lateinit var auth: FirebaseAuth
     private lateinit var weightViewModel: WeightViewModel
+    private val REQUEST_CODE_SCHEDULE_EXACT_ALARM = 1001
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,8 +66,8 @@ class HomeActivity : Base(), SensorEventListener {
 
         weightViewModel = ViewModelProvider(this).get(WeightViewModel::class.java)
 
+        // Request permissions sequentially
         requestActivityRecognitionPermission()
-        requestNotificationPermission()
 
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -128,16 +136,25 @@ class HomeActivity : Base(), SensorEventListener {
 
     }
 
-
+//go up 3 hours
     private fun scheduleHydrationReminder() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, HydrationReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
+        // Create a unique request code for the PendingIntent
+        val pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // Set interval for 2 hours
         val interval = AlarmManager.INTERVAL_HOUR * 2
+        val triggerTime = System.currentTimeMillis() + interval
+        val triggerTimeFormatted = java.util.Date(triggerTime).toString() // Format the time for easier reading
+
+        Log.d("Hydration Reminder", "Scheduling alarms for: ${interval / 3600000} hours, trigger time: $triggerTimeFormatted")
+
+        // Schedule the alarm to repeat every 2 hours
         alarmManager.setInexactRepeating(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + interval,
+            triggerTime,
             interval,
             pendingIntent
         )
@@ -200,53 +217,72 @@ class HomeActivity : Base(), SensorEventListener {
             }
         })
     }
-
+//go up 4 hours
     private fun scheduleDailyMotivationalQuote() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this, MotivationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        // Set the initial trigger time to the current time plus 1 hour
-        val triggerTime = System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR
+        // Create a unique request code for the PendingIntent
+        val pendingIntent = PendingIntent.getBroadcast(this, 2, intent, PendingIntent.FLAG_IMMUTABLE)
 
-        alarmManager.setRepeating(
+        // Set interval for 3 hours
+        val interval = AlarmManager.INTERVAL_HOUR * 3
+        val triggerTime = System.currentTimeMillis() + interval
+        val triggerTimeFormatted = java.util.Date(triggerTime).toString() // Format the time for easier reading
+
+        Log.d("Motivation Reminder", "Scheduling alarms for: ${interval / 3600000} hours, trigger time: $triggerTimeFormatted")
+
+        // Schedule the alarm to repeat every 3 hours
+        alarmManager.setInexactRepeating(
             AlarmManager.RTC_WAKEUP,
             triggerTime,
-            AlarmManager.INTERVAL_HOUR,
+            interval,
             pendingIntent
         )
     }
+//works
+private fun scheduleMealReminders() {
+    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    private fun scheduleMealReminders() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, MealReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        // Set reminders for 8 AM, 12 PM, and 6 PM
-        val mealTimes = listOf(8, 12, 18) // 8 AM, 12 PM, and 6 PM
-
-        for (hour in mealTimes) {
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-
-                // If the time is before the current time, set for the next day
-                if (timeInMillis < System.currentTimeMillis()) {
-                    add(Calendar.DAY_OF_YEAR, 1)
-                }
-            }
-
-            // Set the alarm
-            alarmManager.setRepeating(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                AlarmManager.INTERVAL_DAY,
-                pendingIntent
-            )
+    // Check if we are on API level 31 or higher to handle exact alarms permission
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (!alarmManager.canScheduleExactAlarms()) {
+            // Request permission to schedule exact alarms
+            requestExactAlarmPermission()
+            return
         }
     }
+
+    // Proceed to schedule meal reminders if permission is granted
+    val intent = Intent(this, MealReminderReceiver::class.java)
+    val mealTimes = listOf(8, 12, 18) // 8 AM, 12 PM, and 6 PM
+
+    for (hour in mealTimes) {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+
+
+            // If the time is before the current time, set for the next day
+            if (timeInMillis < System.currentTimeMillis()) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
+            Log.d("Meal Reminder", "Scheduling Meals for: ${hour}:00")
+
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(this, hour, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // Schedule the exact alarm
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+    }
+}
 
 
     private fun isAlarmSet(context: Context, requestCode: Int): Boolean {
@@ -327,7 +363,7 @@ class HomeActivity : Base(), SensorEventListener {
 
         if (userId != null) {
             database.child("WeightData")
-                .addListenerForSingleValueEvent(object : ValueEventListener {
+                .addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val weightEntries = ArrayList<Entry>()
                         var index = 0f
@@ -335,7 +371,6 @@ class HomeActivity : Base(), SensorEventListener {
                         // Check if data exists
                         if (snapshot.exists()) {
                             for (weightSnapshot in snapshot.children) {
-                                // Access the nested "weight" value inside the random key node
                                 val weight = weightSnapshot.child("weight").getValue(String::class.java)
                                     ?.toFloatOrNull()
 
@@ -346,17 +381,49 @@ class HomeActivity : Base(), SensorEventListener {
 
                             // Check if entries are not empty
                             if (weightEntries.isNotEmpty()) {
-                                val lineDataSet = LineDataSet(weightEntries, "Weight Progress")
+                                val lineDataSet = LineDataSet(weightEntries, "Weight Progress").apply {
+                                    color = ContextCompat.getColor(this@HomeActivity, R.color.my_primary) // Custom line color
+                                    circleColors = listOf(ContextCompat.getColor(this@HomeActivity, R.color.purple_500)) // Circle color for points
+                                    lineWidth = 3f // Line thickness
+                                    circleRadius = 6f // Radius of circle indicators
+                                    valueTextColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // Value text color
+                                    valueTextSize = 12f // Size of value text
+                                    mode = LineDataSet.Mode.CUBIC_BEZIER // Smooth line
+                                    setDrawFilled(true) // Fill under the line
+                                    fillColor = ContextCompat.getColor(this@HomeActivity, R.color.purple_200) // Fill color
+                                }
+
                                 val lineData = LineData(lineDataSet)
                                 binding.lineChart.data = lineData
-                                binding.lineChart.invalidate() // Refresh the chart
+
+                                // Customize chart appearance
+                                with(binding.lineChart) {
+                                    description.isEnabled = false // Disable default description
+                                    setBackgroundColor(Color.WHITE) // Chart background color
+                                    setDrawGridBackground(false) // Disable grid background
+                                    axisLeft.apply {
+                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // Left axis text color
+                                        axisMinimum = 0f // Minimum value on Y-axis
+                                        granularity = 1f // Granularity for Y-axis labels
+
+                                    }
+                                    axisRight.isEnabled = false // Disable right axis
+                                    xAxis.apply {
+                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // X-axis text color
+                                        position = XAxis.XAxisPosition.BOTTOM // Position of the X-axis
+                                        setDrawGridLines(false) // Disable grid lines
+                                        granularity = 1f // Set X-axis granularity
+                                        xAxis.isEnabled = false
+                                    }
+
+                                    animateXY(1000, 1000) // Animation for chart data loading
+                                    invalidate() // Refresh the chart
+                                }
                             } else {
-                                // Handle case where no weight entries were found
                                 binding.lineChart.clear()
                                 Toast.makeText(this@HomeActivity, "No weight data available", Toast.LENGTH_SHORT).show()
                             }
                         } else {
-                            // Handle case where snapshot doesn't exist
                             binding.lineChart.clear()
                             Toast.makeText(this@HomeActivity, "No data found", Toast.LENGTH_SHORT).show()
                         }
@@ -369,6 +436,7 @@ class HomeActivity : Base(), SensorEventListener {
                 })
         }
     }
+
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -470,7 +538,57 @@ class HomeActivity : Base(), SensorEventListener {
         }
     }
 
+    private fun requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Inflate the custom layout
+            val dialogView = layoutInflater.inflate(R.layout.dialog_permission_request, null)
 
+            // Create the AlertDialog with the custom view
+            val alertDialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(true)  // Allow dismissing by tapping outside
+                .create()
+
+            // Find buttons in the custom dialog layout
+            val buttonYes: Button = dialogView.findViewById(R.id.button_yes)
+            val buttonNo: Button = dialogView.findViewById(R.id.button_no)
+
+            // Set button click listeners
+            buttonYes.setOnClickListener {
+                // Direct the user to the app's settings to enable exact alarms
+                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+                alertDialog.dismiss()
+            }
+
+            buttonNo.setOnClickListener {
+                Toast.makeText(this@HomeActivity, "Exact Alarm Permission Denied", Toast.LENGTH_SHORT).show()
+                alertDialog.dismiss()
+            }
+
+            // Show the dialog
+            alertDialog.show()
+        }
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_SCHEDULE_EXACT_ALARM) {
+            // Check if the permission was granted after returning from settings
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                if (alarmManager.canScheduleExactAlarms()) {
+                    // Permission granted, you can now schedule your alarms
+                    scheduleMealReminders()
+                } else {
+                    Toast.makeText(this, "Exact Alarm Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     private fun requestActivityRecognitionPermission() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
@@ -479,20 +597,31 @@ class HomeActivity : Base(), SensorEventListener {
                     arrayOf(android.Manifest.permission.ACTIVITY_RECOGNITION),
                     ACTIVITY_RECOGNITION_REQUEST_CODE
                 )
+            }else {
+                // Permission is already granted, proceed to the next permission
+                requestNotificationPermission()
             }
+        } else {
+            // For API levels lower than Q, directly request notification permission
+            requestNotificationPermission()
         }
     }
 
+
     private fun requestNotificationPermission() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(
                     arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
                     NOTIFICATION_PERMISSION_REQUEST_CODE
                 )
+            } else {
+                // Permission is already granted, you can proceed to send notifications
+                Toast.makeText(this, "Notification Permission Already Granted", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
 
 
     override fun onRequestPermissionsResult(
@@ -503,10 +632,10 @@ class HomeActivity : Base(), SensorEventListener {
         when (requestCode) {
             ACTIVITY_RECOGNITION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted, start tracking steps
-                    Toast.makeText(this, "Activity Recognition Permission Granted", Toast.LENGTH_SHORT).show()
-                    registerSensorListener()
+                    // Permission granted, now request notification permission
+                    requestNotificationPermission()
                 } else {
+                    // Permission denied
                     Toast.makeText(this, "Activity Recognition Permission Denied", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -515,16 +644,12 @@ class HomeActivity : Base(), SensorEventListener {
                     // Notification permission granted
                     Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show()
                 } else {
+                    // Notification permission denied
                     Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
-
-
-
-
-
 
 
 
