@@ -85,6 +85,7 @@ Automated CI/CD processes using GitHub Actions:
   - Meal reminders
   - Hydration reminders
   - Motivational quotes
+  - Weightloss notifications
 - **Improved Security**: Strengthened permissions handling and enhanced security measures.
 
 ### Prototype Version 1.0.0
