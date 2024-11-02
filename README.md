@@ -1,71 +1,94 @@
 # INSHAPE - Your Personal Fitness Tracker
 
-## Introduction
-INSHAPE is a fitness monitoring app created to help users effectively manage their health and fitness goals. In the hectic world we live in now, it can be difficult to lead a healthy lifestyle, which is why INSHAPE offers a user-friendly platform designed to meet each person's specific needs
-
+Welcome to **INSHAPE** - a personalized fitness app designed to help users effectively manage and achieve their health and fitness goals. INSHAPE provides a user-friendly interface, tracking tools, and personalized notifications to support a healthier lifestyle.
 
 ## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Design Considerations](#design-considerations)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [GitHub Actions](#github-actions)
-- [Acknowledgements](#Acknowledgements)
+1. [Introduction](#introduction)
+2. [Features](#features)
+3. [Design Considerations](#design-considerations)
+4. [Technologies Used](#technologies-used)
+5. [Getting Started](#getting-started)
+6. [Usage](#usage)
+7. [GitHub Actions](#github-actions)
+8. [Release Notes](#release-notes)
+9. [Acknowledgements](#acknowledgements)
+
+## Introduction
+
+INSHAPE aims to make fitness management easy and enjoyable. It caters to a wide variety of health needs including step tracking, bodyweight tracking, and meal planning. The app now supports multilingual options, offline mode, and motivational reminders, all while providing a seamless and secure user experience.
 
 ## Features
 
-- **Step Tracking**: Monitor daily steps against customizable goals, helping users stay active and engaged with their fitness journey.
-- **Calorie Tracking**: Keep track of calories burned through activities as well as calories consumed, providing users with a complete view of their energy balance.
-- **Hydration Monitoring**: Set hydration goals and track daily water intake to ensure users stay adequately hydrated throughout the day.
-- **Nutrition Tracking**: Log meals and snacks to monitor nutritional intake. Users can access detailed information on macronutrients and vitamins, making it easier to maintain a balanced diet.
-- **Workout Demonstrations**: Access a library of pictures showcasing proper form and technique for various exercises, helping users perform workouts safely and effectively.
-- **User Profile**: A comprehensive profile section for managing user data and preferences, allowing for personalized experiences and tailored fitness recommendations.
-- **Biometric Authentication**: Enhanced security for user accounts through fingerprint and facial recognition, providing a seamless and secure login experience.
-- **Single Sign-On (SSO)**: Simplify the login process with Single Sign-On functionality, allowing users to access InShape using their existing credentials from google, ensuring a hassle-free experience.
+### Core Features
+- **Step Tracking**: Track daily steps and visualize progress towards your daily goals.
+- **Calorie Tracking**: Monitor calories burned and calories consumed with real-time insights.
+- **Hydration Monitoring**: Set and track daily water intake goals.
+- **Nutrition Tracking**: Log and analyze daily meals, complete with detailed nutritional insights.
+- **Workout Demonstrations**: Access a library of workout images to guide exercise form and technique.
+- **User Profile**: Set personal goals and manage user data for a customized experience.
+- **Biometric Authentication**: Log in securely with fingerprint and facial recognition.
+- **Single Sign-On (SSO)**: Log in with Google for a streamlined, secure sign-in experience.
 
-
+### New Features
+- **Multilingual Support**: Added support for Afrikaans and Zulu.
+- **Weight Tracking with Line Chart**: Monitor body weight over time, displayed in a line chart for easy progress tracking.
+- **Fitness Chatbot**: Get fitness tips and answers to workout-related questions via an in-app chatbot.
+- **Offline Mode**: Track user goals and weight changes without an internet connection using Room Database.
+- **Notifications**: Receive reminders for calorie intake, hydration reminders, meal times, and motivational quotes to stay on track.
 
 ## Design Considerations
 
-- **User-Centric Design**: The app focuses on providing an intuitive and aesthetically pleasing user experience. The interface is clean, modern, and designed to reduce clutter.
-- **Responsive Layouts**: Utilizes `ConstraintLayout` and Material Design components to ensure a consistent experience across different device sizes.
-- **Color Scheme**: The app maintains a cohesive color scheme throughout to enhance visual appeal and usability.
+- **User-Centric Design**: Focused on simplicity, clarity, and aesthetic appeal to provide an engaging user experience.
+- **Responsive Layouts**: Designed with ConstraintLayout and Material Design to ensure compatibility across device types.
+- **Color Scheme**: Consistent color palette to maintain a cohesive look and feel.
 
 ## Technologies Used
 
-- **Android Studio**: Development environment for Android applications.
-- **Kotlin**: Primary programming language for the application.
-- **Firebase**: Used for authentication and real-time database storage.
-- **JSONBin**: For fetching nutritional data and other API interactions.
+- **Android Studio**: Development environment.
+- **Kotlin**: Primary language.
+- **Firebase**: Backend support for authentication and real-time database storage.
+- **Room Database**: Offline data storage for goals and weight tracking.
+- **JSONBin**: API for nutritional data.
+- **GitHub Actions**: CI/CD for automated testing and build verifications.
 
 ## Getting Started
 
-To set up the project locally, follow these steps:
+To run this app locally:
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/VCWVL/opsc7312-part-2-ST10019757.git
-    ```
-
-2. Open the project in Android Studio.
-
-3. Sync the project with Gradle files.
-
-4. Set up Firebase and configure the necessary services as outlined in the [Firebase documentation](https://firebase.google.com/docs/android/setup).
-
-5. Build and run the app on an emulator or physical device.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/VCWVL/opsc7312-poe-ST10019757.git
+   ```
+2. **Open in Android Studio** and sync with Gradle.
+3. **Set up Firebase** by adding your configuration files.
+4. **Build and Run** on an emulator or physical device.
 
 ## Usage
 
-Once the app is installed, users can create an account or log in using existing credentials. They can then access features such as step tracking, calorie logging, and personal goals directly from the home screen.
+Once installed, log in with Google or create an account to access the main dashboard, which includes step tracking, calorie tracking, hydration tracking, and more. Notifications keep you informed, and the multilingual support ensures a broader user experience.
 
 ## GitHub Actions
 
-GitHub Actions are implemented for Continuous Integration/Continuous Deployment (CI/CD). This includes:
-- **Automated Testing**: Ensures that new changes do not break existing functionality.
-- **Build Verification**: Automatically builds the project on every push to verify that the latest changes are stable.
+Automated CI/CD processes using GitHub Actions:
+- **Automated Testing**: Ensures stability of new changes.
+- **Build Verification**: Automatically builds the project for stable releases.
+
+## Release Notes
+
+### Version 1.1.0
+- **Added Multilingual Support**: Users can now choose between English, Afrikaans, and Zulu for the app interface.
+- **Weight Tracking and Line Chart**: Track and visualize body weight over time.
+- **In-App Fitness Chatbot**: A chatbot feature to assist users with fitness questions.
+- **Offline Mode with Room Database**: Allows goal and weight tracking even when offline.
+- **Notifications**:
+  - Calorie intake alerts
+  - Meal reminders
+  - Hydration reminders
+  - Motivational quotes
+- **Improved Security**: Strengthened permissions handling and enhanced security measures.
+
+### Prototype Version 1.0.0
+- **Initial Release** with core features, including step tracking, calorie and hydration monitoring, profile settings, and biometric authentication.
 
 ## Acknowledgements
 1. In (2024). Google Sign In | Firebase Authentication | Login with Google using Firebase in Android Kotlin 2024. [online] YouTube. Available at: https://youtu.be/dJS9QMapWIQ?si=jXnki8ULqFvm7dlY [Accessed 10 Sep. 2024].
@@ -74,5 +97,12 @@ GitHub Actions are implemented for Continuous Integration/Continuous Deployment 
 4. Free (2022). Free API hosting! How to deploy rest API on jsonbin for free | Easy API host on a third-party server. [online] YouTube. Available at: https://youtu.be/THeD_NisH5E?si=OpANIwODINgwNyr5 [Accessed 10 Sep. 2024].
 5. Knowledgement, A. (2024). News App in Android Studio using Kotlin | Part 2 - Retrofit & News API. [online] YouTube. Available at: https://youtu.be/rM9gYyrP5xY?si=HNH4pZTAtasvXOCb [Accessed 15 Sep. 2024].
 6. Android, in (2023). How to play YouTube videos with custom controls in Android Studio without WebView. [online] YouTube. Available at: https://youtu.be/9K2-y1ih4j8?si=_Xe69pnybMx49AVg [Accessed 20 Sep. 2024].
+7. Android, in (2023). The FULL Beginner Guide for Room in Android | Local Database Tutorial for Android. [online] YouTube. Available at: https://youtu.be/bOd3wO0uFr8?si=WOAo9NnUFQSx3TUL [Accessed 26 Oct. 2024].
+8. San, S. (2020). ROOM Database - Kotlin. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PLSrm9z4zp4mEPOfZNV9O-crOhoMa0G2-o [Accessed 26 Oct. 2024].
+9. Android, in (2023a). AlarmManager in Android Studio || Notification using AlarmManager is Android Studio || 2023. [online] YouTube. Available at: https://youtu.be/5RcDWnNgkQg?si=yqNU_GCQFjr-uwDZ [Accessed 24 Oct. 2024].
+10. Schedule Local Notifications Android Studio Kotlin Tutorial (2021). Schedule Local Notifications Android Studio Kotlin Tutorial. [online] YouTube. Available at: https://youtu.be/_Z2S63O-1HE?si=ENHJB1-Hc7d_JBS5 [Accessed 24 Oct. 2024].
+11. with (2019). #3 Display Android notification at a particular time with Alarm Manager. [online] YouTube. Available at: https://youtu.be/nl-dheVpt8o?si=bwbuE_C9_suwY8UD [Accessed 24 Oct. 2024].
+12. indently (2020). Android Chat Bot Tutorial 2020. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PL4KX3oEgJcfcDx4VeO4R-aCBJruHpvqBs [Accessed 20 Oct. 2024].
+13. 
 
 
