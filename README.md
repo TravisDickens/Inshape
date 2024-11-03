@@ -91,19 +91,39 @@ Automated CI/CD processes using GitHub Actions:
 ### Prototype Version 1.0.0
 - **Initial Release** with core features, including step tracking, calorie and hydration monitoring, profile settings, and biometric authentication.
 
+## Frequently Asked Questions (FAQs)
+**Q1**: How do I reset my password?
+**A**: To reset your password please contact the developer
+
+**Q2**: Can I use INSHAPE offline?
+**A**: Yes! INSHAPE offers an offline mode that allows you to track your goals and weight changes without an internet connection. Data will sync once you are back online.
+
+**Q3**: How do I track my calories and nutrition?
+**A**: You can log your meals using the nutrition tracking feature. Simply enter the food items you consumed, and INSHAPE will provide detailed nutritional insights, including calorie counts.
+
+**Q4**: What if I encounter a bug or issue?
+**A**: If you encounter any issues, please reach out to our support team through the contact details below.
+
+**Q5**: How can I change my language preference?
+**A**: You can change your language preference in the settings menu under the "Language" option. Currently, INSHAPE supports English, Afrikaans, and Zulu.
+
+## Developer Contact Details
+For any questions, feedback, or support, please contact us at:
+
+**Email**: travisdickens246@gmail.com or Travis.Dickens@outlook.com 
+
 ## Acknowledgements
-1. In (2024). Google Sign In | Firebase Authentication | Login with Google using Firebase in Android Kotlin 2024. [online] YouTube. Available at: https://youtu.be/dJS9QMapWIQ?si=jXnki8ULqFvm7dlY [Accessed 10 Sep. 2024].
-2. Android, in (2020). How to create a Step Counter/Pedometer in Android Studio (Kotlin 2020). [online] YouTube. Available at: https://youtu.be/WSx2a99kPY4?si=Z3O9zMRgQ4xbams3 [Accessed 12 Sep. 2024].
-3. for, C. (2023). CI/CD for Android Projects using Github Actions | Pipelines + Workflows. [online] YouTube. Available at: https://youtu.be/uBXzaaOHVzY?si=c70h7aEhfs41aE7P [Accessed 29 Sep. 2024].
-4. Free (2022). Free API hosting! How to deploy rest API on jsonbin for free | Easy API host on a third-party server. [online] YouTube. Available at: https://youtu.be/THeD_NisH5E?si=OpANIwODINgwNyr5 [Accessed 10 Sep. 2024].
-5. Knowledgement, A. (2024). News App in Android Studio using Kotlin | Part 2 - Retrofit & News API. [online] YouTube. Available at: https://youtu.be/rM9gYyrP5xY?si=HNH4pZTAtasvXOCb [Accessed 15 Sep. 2024].
-6. Android, in (2023). How to play YouTube videos with custom controls in Android Studio without WebView. [online] YouTube. Available at: https://youtu.be/9K2-y1ih4j8?si=_Xe69pnybMx49AVg [Accessed 20 Sep. 2024].
-7. Android, in (2023). The FULL Beginner Guide for Room in Android | Local Database Tutorial for Android. [online] YouTube. Available at: https://youtu.be/bOd3wO0uFr8?si=WOAo9NnUFQSx3TUL [Accessed 26 Oct. 2024].
-8. San, S. (2020). ROOM Database - Kotlin. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PLSrm9z4zp4mEPOfZNV9O-crOhoMa0G2-o [Accessed 26 Oct. 2024].
-9. Android, in (2023a). AlarmManager in Android Studio || Notification using AlarmManager is Android Studio || 2023. [online] YouTube. Available at: https://youtu.be/5RcDWnNgkQg?si=yqNU_GCQFjr-uwDZ [Accessed 24 Oct. 2024].
-10. Schedule Local Notifications Android Studio Kotlin Tutorial (2021). Schedule Local Notifications Android Studio Kotlin Tutorial. [online] YouTube. Available at: https://youtu.be/_Z2S63O-1HE?si=ENHJB1-Hc7d_JBS5 [Accessed 24 Oct. 2024].
-11. with (2019). #3 Display Android notification at a particular time with Alarm Manager. [online] YouTube. Available at: https://youtu.be/nl-dheVpt8o?si=bwbuE_C9_suwY8UD [Accessed 24 Oct. 2024].
-12. indently (2020). Android Chat Bot Tutorial 2020. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PL4KX3oEgJcfcDx4VeO4R-aCBJruHpvqBs [Accessed 20 Oct. 2024].
-13. 
+1. In (2024). Google Sign In | Firebase Authentication | Login with Google using Firebase in Android Kotlin 2024. [online] YouTube. Available at: https://youtu.be/dJS9QMapWIQ?si=jXnki8ULqFvm7dlY [Accessed 10 September. 2024].
+2. Android, in (2020). How to create a Step Counter/Pedometer in Android Studio (Kotlin 2020). [online] YouTube. Available at: https://youtu.be/WSx2a99kPY4?si=Z3O9zMRgQ4xbams3 [Accessed 12 September. 2024].
+3. for, C. (2023). CI/CD for Android Projects using Github Actions | Pipelines + Workflows. [online] YouTube. Available at: https://youtu.be/uBXzaaOHVzY?si=c70h7aEhfs41aE7P [Accessed 29 September. 2024].
+4. Free (2022). Free API hosting! How to deploy rest API on jsonbin for free | Easy API host on a third-party server. [online] YouTube. Available at: https://youtu.be/THeD_NisH5E?si=OpANIwODINgwNyr5 [Accessed 10 September. 2024].
+5. Knowledgement, A. (2024). News App in Android Studio using Kotlin | Part 2 - Retrofit & News API. [online] YouTube. Available at: https://youtu.be/rM9gYyrP5xY?si=HNH4pZTAtasvXOCb [Accessed 15 September. 2024].
+6. Android, in (2023). How to play YouTube videos with custom controls in Android Studio without WebView. [online] YouTube. Available at: https://youtu.be/9K2-y1ih4j8?si=_Xe69pnybMx49AVg [Accessed 20 September. 2024].
+7. Android, in (2023). The FULL Beginner Guide for Room in Android | Local Database Tutorial for Android. [online] YouTube. Available at: https://youtu.be/bOd3wO0uFr8?si=WOAo9NnUFQSx3TUL [Accessed 26 October. 2024].
+8. San, S. (2020). ROOM Database - Kotlin. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PLSrm9z4zp4mEPOfZNV9O-crOhoMa0G2-o [Accessed 26 October. 2024].
+9. Android, in (2023a). AlarmManager in Android Studio || Notification using AlarmManager is Android Studio || 2023. [online] YouTube. Available at: https://youtu.be/5RcDWnNgkQg?si=yqNU_GCQFjr-uwDZ [Accessed 24 October. 2024].
+10. Schedule Local Notifications Android Studio Kotlin Tutorial (2021). Schedule Local Notifications Android Studio Kotlin Tutorial. [online] YouTube. Available at: https://youtu.be/_Z2S63O-1HE?si=ENHJB1-Hc7d_JBS5 [Accessed 24 October. 2024].
+11. with (2019). #3 Display Android notification at a particular time with Alarm Manager. [online] YouTube. Available at: https://youtu.be/nl-dheVpt8o?si=bwbuE_C9_suwY8UD [Accessed 24 October. 2024].
+12. indently (2020). Android Chat Bot Tutorial 2020. [online] YouTube. Available at: http://www.youtube.com/playlist?list=PL4KX3oEgJcfcDx4VeO4R-aCBJruHpvqBs [Accessed 20 October. 2024].
 
 
