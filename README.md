@@ -41,6 +41,16 @@ INSHAPE aims to make fitness management easy and enjoyable. It caters to a wide 
 - **User-Centric Design**: Focused on simplicity, clarity, and aesthetic appeal to provide an engaging user experience.
 - **Responsive Layouts**: Designed with ConstraintLayout and Material Design to ensure compatibility across device types.
 - **Color Scheme**: Consistent color palette to maintain a cohesive look and feel.
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <img src="https://github.com/user-attachments/assets/7c8e48e2-65c0-4551-8054-a713e84b7f03" alt="LoginPS" width="150" height="280"/>
+    <img src="https://github.com/user-attachments/assets/902dcbf2-b8ce-460c-b06d-74ef35c88ce3" alt="Register" width="150" height="280"/>
+    <img src="https://github.com/user-attachments/assets/a5769ed0-3d14-4bc9-a518-2bfd19a5713b" alt="Home" width="150" height="280"/>
+    <img src="https://github.com/user-attachments/assets/048d9452-b655-48c3-9fe9-594830078f08" alt="ExerciseVideos" width="150" height="280"/> 
+    <img src="https://github.com/user-attachments/assets/b373a1bd-80ec-4d6a-b8bc-d833c735b219" alt="Chatbot" width="150" height="280"/> 
+    <img src="https://github.com/user-attachments/assets/af935c0a-a06c-4c54-b997-215b98838add" alt="settings" width="150" height="280"/> 
+</div>
+
+
 
 ## Technologies Used
 
