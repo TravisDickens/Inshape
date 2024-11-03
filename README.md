@@ -26,10 +26,10 @@ INSHAPE aims to make fitness management easy and enjoyable. It caters to a wide 
 - **Nutrition Tracking**: Log and analyze daily meals, complete with detailed nutritional insights.
 - **Workout Demonstrations**: Access a library of workout images to guide exercise form and technique.
 - **User Profile**: Set personal goals and manage user data for a customized experience.
-- **Biometric Authentication**: Log in securely with fingerprint and facial recognition.
 - **Single Sign-On (SSO)**: Log in with Google for a streamlined, secure sign-in experience.
 
 ### New Features
+- **Biometric Authentication**: Log in securely with fingerprint and facial recognition.
 - **Multilingual Support**: Added support for Afrikaans and Zulu.
 - **Weight Tracking with Line Chart**: Monitor body weight over time, displayed in a line chart for easy progress tracking.
 - **Fitness Chatbot**: Get fitness tips and answers to workout-related questions via an in-app chatbot.
@@ -49,8 +49,6 @@ INSHAPE aims to make fitness management easy and enjoyable. It caters to a wide 
     <img src="https://github.com/user-attachments/assets/b373a1bd-80ec-4d6a-b8bc-d833c735b219" alt="Chatbot" width="150" height="280"/> 
     <img src="https://github.com/user-attachments/assets/af935c0a-a06c-4c54-b997-215b98838add" alt="settings" width="150" height="280"/> 
 </div>
-
-
 
 ## Technologies Used
 
