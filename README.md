@@ -101,18 +101,23 @@ Automated CI/CD processes using GitHub Actions:
 
 ## Frequently Asked Questions (FAQs)
 **Q1**: How do I reset my password?
+
 **A**: To reset your password please contact the developer
 
 **Q2**: Can I use INSHAPE offline?
+
 **A**: Yes! INSHAPE offers an offline mode that allows you to track your goals and weight changes without an internet connection. Data will sync once you are back online.
 
 **Q3**: How do I track my calories and nutrition?
+
 **A**: You can log your meals using the nutrition tracking feature. Simply enter the food items you consumed, and INSHAPE will provide detailed nutritional insights, including calorie counts.
 
 **Q4**: What if I encounter a bug or issue?
+
 **A**: If you encounter any issues, please reach out to our support team through the contact details below.
 
 **Q5**: How can I change my language preference?
+
 **A**: You can change your language preference in the settings menu under the "Language" option. Currently, INSHAPE supports English, Afrikaans, and Zulu.
 
 ## Developer Contact Details
