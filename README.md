@@ -12,6 +12,7 @@ Welcome to **INSHAPE** - a personalized fitness app designed to help users effec
 7. [GitHub Actions](#github-actions)
 8. [Release Notes](#release-notes)
 9. [Acknowledgements](#acknowledgements)
+10. [ChatBot Questions](#chatbot-questions)
 
 ## Introduction
 
@@ -98,6 +99,30 @@ Automated CI/CD processes using GitHub Actions:
 
 ### Prototype Version 1.0.0
 - **Initial Release** with core features, including step tracking, calorie and hydration monitoring, profile settings, and biometric authentication.
+
+## Chatbot Questions
+1. How do I lose weight?
+2. What are the best exercises for building abs?
+3. How often should I work out?
+4. What should I eat to build muscle?
+5. Is cardio or strength training better for weight loss?
+6. How can I increase my metabolism?
+7. What are healthy snacks for weight loss?
+8. How much water should I drink daily?
+9. What is the best time to exercise?
+10. How can I stay motivated to work out?
+11. What are the benefits of yoga?
+12. How do I prevent injuries while exercising?
+13. Is it okay to skip rest days?
+14. How can I improve my flexibility?
+15. What is a balanced diet?
+16. How can I track my calories?
+17. What are some low-calorie meal options?
+18. How can I build a workout routine?
+19. What are the signs of overtraining?
+20. How can I boost my energy levels?
+21. What is HIIT training?
+22. Can I lose weight without exercising?
 
 ## Frequently Asked Questions (FAQs)
 **Q1**: How do I reset my password?
