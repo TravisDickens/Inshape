@@ -60,7 +60,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:text="0"
+                        android:text="@string/_0"
                         android:textColor="@color/black"
                         android:textSize="40sp" />
 
@@ -99,7 +99,7 @@
                         android:id="@+id/calories_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 Kcal"
+                    android:text="@string/_0_kcal"
                     android:textColor="@color/black"
                     android:textSize="24sp"
                     android:textStyle="bold" />
@@ -238,11 +238,12 @@
                         android:layout_height="200dp" />
 
                     <TextView
+                        android:id="@+id/weightTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:paddingTop="8dp"
-                        android:text="Weight Progress"
+                        android:text="@string/weight_progress"
                         android:textColor="@color/black"
                         android:textSize="24sp"
                         android:textStyle="bold" />

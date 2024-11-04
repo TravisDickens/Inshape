@@ -13,8 +13,8 @@ android {
         applicationId = "com.travis.inshape"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -22,6 +22,11 @@ android {
     buildFeatures{
         viewBinding = true
 
+    }
+    bundle{
+        language{
+            enableSplit = false
+        }
     }
 
     buildTypes {

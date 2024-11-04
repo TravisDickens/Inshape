@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/home"
-        android:title="Home"
+        android:title="@string/home"
         android:icon="@drawable/baseline_home_24"/>
 
 
     <item
         android:id="@+id/videos"
-        android:title="Videos"
+        android:title="@string/videos"
         android:icon="@drawable/baseline_ondemand_video_24" />
 
     <item
@@ -18,12 +18,12 @@
 
     <item
         android:id="@+id/ChatBot"
-        android:title="ChatBot"
+        android:title="@string/chatbot"
         android:icon="@drawable/baseline_chat_24" />
 
     <item
         android:id="@+id/profile"
-        android:title="Profile"
+        android:title="@string/profile"
         android:icon="@drawable/baseline_person_24" />
 
 

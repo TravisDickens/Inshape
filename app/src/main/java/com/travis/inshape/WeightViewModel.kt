@@ -3,99 +3,114 @@ package com.travis.inshape
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.launch
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class WeightViewModel(application: Application) : AndroidViewModel(application) {
+
     private val weightDao: WeightDao = WeightDatabase.getDatabase(application).weightDao()
     private val context: Context = application.applicationContext
-
     val allWeights: LiveData<List<Weight>> = weightDao.getAllWeights().asLiveData()
 
+
+     //Inserts a weight entry into the local database.
     fun insert(weight: Weight) {
         viewModelScope.launch {
-            // Fetch the previous weight before inserting the new one
-            val previousWeight = getPreviousWeight()
-
-            // Convert weight.weight to Double for comparison
-            val weightDifference = previousWeight?.let { it - weight.weight.toDouble() }
-
-            // Send notification if the weight has decreased
-            if (weightDifference != null && weightDifference > 0) {
-                NotificationUtils.sendNotification(
-                    context,
-                    "Congratulations!",
-                    "You lost $weightDifference kg!"
-                )
-            }
-
-            if (NetworkUtils.isNetworkAvailable(getApplication())) {
-                // Sync with Firebase directly
-                syncWithFirebase(weight)
-            } else {
-                // Save locally, mark as unsynced
-                weight.isSynced = false
+            try {
                 weightDao.insert(weight)
+                Log.d("WeightViewModel", "Weight inserted locally: $weight")
+            } catch (e: Exception) {
+                Log.e("WeightViewModel", "Error inserting weight locally: ${e.message}", e)
+                Toast.makeText(context, "Failed to save weight locally", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
 
-    // Helper function to get the most recent weight from Firebase
-    private suspend fun getPreviousWeight(): Double? {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
-        val weightRef = FirebaseDatabase.getInstance().getReference("users/$userId/WeightData")
-
-        return suspendCoroutine { continuation ->
-            weightRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val lastWeightString = dataSnapshot.children.lastOrNull()?.child("weight")?.getValue(String::class.java)
-                    val lastWeight = lastWeightString?.toDoubleOrNull() // Convert to Double if possible
-                    continuation.resume(lastWeight)
-                }
-
-                override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e("WeightViewModel", "Error fetching previous weight: ${databaseError.message}")
-                    continuation.resume(null)
-                }
-            })
+     // Synchronizes a given weight with Firebase and updates its sync status in the local database.
+    fun syncWithFirebase(weight: Weight) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Log.w("WeightViewModel", "User not logged in. Cannot sync weight with Firebase.")
+            return
         }
-    }
 
-
-    // Sync the weight with Firebase
-    private fun syncWithFirebase(weight: Weight) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val weightRef = FirebaseDatabase.getInstance().getReference("users/$userId/WeightData")
 
         // Save new weight entry in Firebase
         weightRef.child(weight.timestamp.toString()).setValue(weight).addOnSuccessListener {
             viewModelScope.launch {
-                weight.isSynced = true
-                weight.firebaseId = weight.timestamp.toString()
-                weightDao.update(weight)
+                try {
+                    weight.isSynced = true
+                    weight.firebaseId = weight.timestamp.toString()
+                    weightDao.update(weight)
+                    Toast.makeText(context, "Weight synced with Firebase", Toast.LENGTH_SHORT).show()
+                    Log.d("WeightViewModel", "Weight synced successfully with Firebase: $weight")
+                } catch (e: Exception) {
+                    Log.e("WeightViewModel", "Error updating weight sync status: ${e.message}", e)
+                }
             }
-        }.addOnFailureListener {
-            Log.e("WeightViewModel", "Failed to sync weight with Firebase")
-        }
-    }
-    fun syncUnsyncedWeights() {
-        viewModelScope.launch {
-            val unsyncedWeights = weightDao.getUnsyncedWeights()
-            for (weight in unsyncedWeights) {
-                syncWithFirebase(weight)
-            }
+        }.addOnFailureListener { e ->
+            Log.e("WeightViewModel", "Failed to sync weight with Firebase: ${e.message}", e)
+            Toast.makeText(context, "Failed to sync weight with Firebase", Toast.LENGTH_SHORT).show()
         }
     }
 
+
+     // Retrieves the last recorded weight from Firebase and returns it via a callback.
+    fun getLastWeight(callback: (Float?) -> Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            Log.w("WeightViewModel", "User not logged in. Cannot fetch last weight from Firebase.")
+            callback(null)
+            return
+        }
+
+        val weightRef = FirebaseDatabase.getInstance().getReference("users/$userId/WeightData")
+
+        weightRef.orderByKey().limitToLast(1).get().addOnSuccessListener { snapshot ->
+            try {
+                if (snapshot.exists()) {
+                    val lastWeight = snapshot.children.first().child("weight").getValue(String::class.java)?.toFloat()
+                    callback(lastWeight)
+                    Log.d("WeightViewModel", "Last weight fetched from Firebase: $lastWeight")
+                } else {
+                    callback(null)
+                    Log.d("WeightViewModel", "No weight records found in Firebase.")
+                }
+            } catch (e: Exception) {
+                Log.e("WeightViewModel", "Error fetching last weight from Firebase: ${e.message}", e)
+                callback(null)
+            }
+        }.addOnFailureListener { e ->
+            Log.e("WeightViewModel", "Failed to fetch last weight from Firebase: ${e.message}", e)
+            callback(null)
+        }
+    }
+
+
+     // Synchronizes all unsynced weights with Firebase.
+    fun syncUnsyncedWeights() {
+        viewModelScope.launch {
+            try {
+                val unsyncedWeights = weightDao.getUnsyncedWeights()
+                if (unsyncedWeights.isNotEmpty()) {
+                    Log.d("WeightViewModel", "Syncing ${unsyncedWeights.size} unsynced weights with Firebase.")
+                    for (weight in unsyncedWeights) {
+                        syncWithFirebase(weight)
+                    }
+                } else {
+                    Log.d("WeightViewModel", "No unsynced weights to sync.")
+                }
+            } catch (e: Exception) {
+                Log.e("WeightViewModel", "Error syncing unsynced weights: ${e.message}", e)
+            }
+        }
+    }
 }

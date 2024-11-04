@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +22,7 @@ class ChatBotActivity : AppCompatActivity() {
     private lateinit var questions: List<QuestionAnswer>
     val REQUEST_CODE_VOICE_INPUT = 100
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBotBinding.inflate(layoutInflater)
@@ -29,10 +31,16 @@ class ChatBotActivity : AppCompatActivity() {
         // Load and parse the questions.json file
         val gson = Gson()
         val jsonString = loadJSONFromAsset(this, "questions.json")
-        val parsedQuestions: Questions = gson.fromJson(jsonString, Questions::class.java)
-        questions = parsedQuestions.questions
+        if (jsonString != null) {
+            val parsedQuestions: Questions = gson.fromJson(jsonString, Questions::class.java)
+            questions = parsedQuestions.questions
+            Log.d("ChatBotActivity", "Questions loaded successfully.")
+        } else {
+            Log.e("ChatBotActivity", "Failed to load questions from JSON.")
+            Toast.makeText(this, "Error loading chat bot data.", Toast.LENGTH_LONG).show()
+        }
 
-        // Setup RecyclerView
+        // Setup RecyclerView for chat messages
         chatAdapter = ChatAdapter(mutableListOf())
         binding.chatRecyclerView.apply {
             adapter = chatAdapter
@@ -45,7 +53,7 @@ class ChatBotActivity : AppCompatActivity() {
         }
 
         // Set up voice input button listener
-        binding.vBtn.setOnClickListener {
+        binding.micButton.setOnClickListener {
             startVoiceInput()
         }
     }
@@ -56,6 +64,8 @@ class ChatBotActivity : AppCompatActivity() {
         if (userInput.isNotBlank()) {
             addMessageToChat(userInput, true)
             binding.messageEditText.text?.clear()
+        } else {
+            Log.d("ChatBotActivity", "Empty message input ignored.")
         }
     }
 
@@ -64,11 +74,11 @@ class ChatBotActivity : AppCompatActivity() {
         binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
 
         if (isUser) {
-            // Show typing indicator
+            // Display a typing indicator
             chatAdapter.addMessage(ChatMessage("Chatbot is typing...", isUser = false))
             binding.chatRecyclerView.scrollToPosition(chatAdapter.itemCount - 1)
 
-            // Simulate delay before the chatbot replies
+            // Simulate a delay to mimic chatbot response time
             CoroutineScope(Dispatchers.Main).launch {
                 delay(1500)
                 val chatbotResponse = getAnswer(message, questions)
@@ -89,9 +99,10 @@ class ChatBotActivity : AppCompatActivity() {
         }
 
         try {
-
             startActivityForResult(intent, REQUEST_CODE_VOICE_INPUT)
+            Log.d("ChatBotActivity", "Voice input initiated.")
         } catch (e: Exception) {
+            Log.e("ChatBotActivity", "Voice input not supported.", e)
             Toast.makeText(this, "Speech input is not supported on this device.", Toast.LENGTH_SHORT).show()
         }
     }
@@ -101,12 +112,14 @@ class ChatBotActivity : AppCompatActivity() {
         if (requestCode == REQUEST_CODE_VOICE_INPUT && resultCode == RESULT_OK) {
             val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             result?.let {
-                addMessageToChat(it[0], true) 
+                addMessageToChat(it[0], true)
+                Log.d("ChatBotActivity", "Received voice input: ${it[0]}")
             }
+        } else {
+            Log.d("ChatBotActivity", "Voice input canceled or failed.")
         }
     }
 
-    // Existing methods...
 
     fun loadJSONFromAsset(context: Context, fileName: String): String? {
         return try {
@@ -116,6 +129,7 @@ class ChatBotActivity : AppCompatActivity() {
             inputStream.read(buffer)
             inputStream.close()
             String(buffer, Charsets.UTF_8)
+
         } catch (ex: Exception) {
             ex.printStackTrace()
             null
@@ -143,6 +157,7 @@ class ChatBotActivity : AppCompatActivity() {
 
             // Prioritize keyword matching (e.g., more common keywords = better match)
             if (commonKeywords.size > 1) {
+                Log.d("ChatBotActivity", "Keyword match found for input: $userInput")
                 return qa.answer
             }
 
@@ -155,10 +170,12 @@ class ChatBotActivity : AppCompatActivity() {
 
         // Set a threshold to determine how close the match must be
         return if (minDistance <= 5 && bestMatch != null) {
+            Log.d("ChatBotActivity", "Best match found with distance $minDistance for input: $userInput")
             bestMatch.answer
         } else {
             // Provide a follow-up question if the response is generic
-            "I'm not sure about that. Can you provide more details?"
+            Log.d("ChatBotActivity", "No close match found for input: $userInput")
+            "Sorry, I do not have an answer for that"
         }
     }
 
@@ -187,7 +204,7 @@ class ChatBotActivity : AppCompatActivity() {
                 }
             }
         }
-
+        Log.d("ChatBotActivity", "Calculated Levenshtein distance: ${dp[s1.length][s2.length]} between $s1 and $s2")
         return dp[s1.length][s2.length]
     }
 

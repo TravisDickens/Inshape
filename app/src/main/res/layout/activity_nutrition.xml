@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:titleTextColor="@color/white"
-            app:title="Enter Food"
+            app:title="@string/enter_food"
             app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
             android:background="@color/purple_500"/>
     </com.google.android.material.appbar.AppBarLayout>
@@ -165,7 +165,7 @@
         android:id="@+id/save_calories_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Next"
+        android:text="@string/next"
         android:textSize="16sp"
         android:textColor="@color/white"
         android:backgroundTint="@color/black"

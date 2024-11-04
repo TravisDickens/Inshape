@@ -197,12 +197,15 @@ class StepDetailsActivity : Base() {
                 valueTextColor = ContextCompat.getColor(this@StepDetailsActivity, R.color.black)
                 valueTextSize = 10f // Value text size
 
-                //Add a gradient fill
+                // Add a gradient fill
                 setDrawFilled(true)
                 fillDrawable = ContextCompat.getDrawable(this@StepDetailsActivity, R.drawable.gradient_fill)
             }
 
             val lineData = LineData(dataSet)
+
+            // Use the custom IntValueFormatter for integer values
+            lineData.setValueFormatter(IntValueFormatter())
 
             // Customize the chart appearance
             lineChart.apply {
@@ -220,7 +223,8 @@ class StepDetailsActivity : Base() {
                     setDrawGridLines(false)
                     // Positioning of x-axis labels
                     position = XAxis.XAxisPosition.BOTTOM
-                    xAxis.isEnabled = false
+                    // Disable x axis labels
+                    isEnabled = false
                 }
                 axisLeft.apply {
                     // Disable grid lines on left y-axis
@@ -231,10 +235,13 @@ class StepDetailsActivity : Base() {
                 // Animation for line chart
                 animateX(500)
             }
-             // Refresh chart with new data
+            // Refresh chart with new data
             lineChart.invalidate()
         } catch (e: Exception) {
             Toast.makeText(this, "Error updating line chart: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
 }

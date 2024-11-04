@@ -168,7 +168,7 @@
                     android:layout_height="wrap_content"
                     android:thumbTint="@color/black"
                     android:trackTint="@color/black"
-                    tools:ignore="TouchTargetSizeCheck,UseSwitchCompatOrMaterialXml" />
+                    tools:ignore="TouchTargetSizeCheck,UseSwitchCompatOrMaterialXml,DuplicateSpeakableTextCheck" />
             </LinearLayout>
 
             <LinearLayout
@@ -187,7 +187,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Stay signed in"
+                    android:text="@string/stay_signed_in"
                     android:textSize="16sp"
                     android:textColor="@color/black" />
 

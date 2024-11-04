@@ -57,7 +57,7 @@ class HomeActivity : Base(), SensorEventListener {
     private lateinit var auth: FirebaseAuth
     private lateinit var weightViewModel: WeightViewModel
     private val REQUEST_CODE_SCHEDULE_EXACT_ALARM = 1001
-
+    private var currentLang: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +68,7 @@ class HomeActivity : Base(), SensorEventListener {
 
         // Request permissions sequentially
         requestActivityRecognitionPermission()
-
+        checkExactAlarmPermission()
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -81,6 +81,10 @@ class HomeActivity : Base(), SensorEventListener {
             return
         }
         database = FirebaseDatabase.getInstance().reference.child("users").child(userId)
+
+        // Load the current language from SharedPreferences
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        currentLang = sharedPref.getString("language", Locale.getDefault().language)
 
         // Load current step count from Firebase
         loadStepsFromFirebase()
@@ -125,173 +129,19 @@ class HomeActivity : Base(), SensorEventListener {
 
         //load weight graph
         loadWeightData()
-
+        if (checkExactAlarmPermission()) {
         if (!isAlarmSet(this, 0)) {
             scheduleHydrationReminder()
             checkCalorieGoal()
             scheduleDailyMotivationalQuote()
             scheduleMealReminders()
         }
-
-
-    }
-
-//go up 3 hours
-    private fun scheduleHydrationReminder() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, HydrationReminderReceiver::class.java)
-
-        // Create a unique request code for the PendingIntent
-        val pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        // Set interval for 2 hours
-        val interval = AlarmManager.INTERVAL_HOUR * 2
-        val triggerTime = System.currentTimeMillis() + interval
-        val triggerTimeFormatted = java.util.Date(triggerTime).toString() // Format the time for easier reading
-
-        Log.d("Hydration Reminder", "Scheduling alarms for: ${interval / 3600000} hours, trigger time: $triggerTimeFormatted")
-
-        // Schedule the alarm to repeat every 2 hours
-        alarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            interval,
-            pendingIntent
-        )
-    }
-
-    private fun checkCalorieGoal() {
-        val currentDate = getCurrentDate()
-
-        // Reference to user's goals and nutritional info in Firebase
-        val calorieGoalRef = database.child("goals").child("calorieGoal")
-        val nutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
-
-        // Fetch calorie goal
-        calorieGoalRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // Fetch calorie goal as either a String or Double, and convert it to Double safely
-                val calorieGoal = try {
-                    snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
-                } catch (e: Exception) {
-                    snapshot.getValue(Double::class.java) ?: 0.0
-                }
-
-                // Fetch calories consumed for the current date
-                nutritionalInfoRef.addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        var totalCalories = 0.0
-
-                        if (snapshot.exists()) {
-                            // Loop through each meal and sum the calories
-                            for (mealSnapshot in snapshot.children) {
-                                for (entrySnapshot in mealSnapshot.children) {
-                                    val calories = try {
-                                        entrySnapshot.child("calories").getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
-                                    } catch (e: Exception) {
-                                        entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
-                                    }
-                                    totalCalories += calories
-                                }
-                            }
-
-                            Log.d("CalorieCheck", "Total Calories: $totalCalories, Calorie Goal: $calorieGoal, 80% Goal: ${0.8 * calorieGoal}")
-
-                            // Send notification if 80% of the goal is reached
-                            if (totalCalories >= 0.8 * calorieGoal) {
-                                NotificationUtils.sendNotification(this@HomeActivity, "Calorie Alert", "You've reached 80% of your daily calorie goal!")
-                            }
-                        } else {
-                            Log.d("CalorieCheck", "No nutritional data found for the current date.")
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("CalorieCheck", "Failed to read nutritional data: ${error.message}")
-                    }
-                })
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("CalorieGoal", "Failed to read calorie goal: ${error.message}")
-            }
-        })
-    }
-//go up 4 hours
-    private fun scheduleDailyMotivationalQuote() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, MotivationReceiver::class.java)
-
-        // Create a unique request code for the PendingIntent
-        val pendingIntent = PendingIntent.getBroadcast(this, 2, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        // Set interval for 3 hours
-        val interval = AlarmManager.INTERVAL_HOUR * 3
-        val triggerTime = System.currentTimeMillis() + interval
-        val triggerTimeFormatted = java.util.Date(triggerTime).toString() // Format the time for easier reading
-
-        Log.d("Motivation Reminder", "Scheduling alarms for: ${interval / 3600000} hours, trigger time: $triggerTimeFormatted")
-
-        // Schedule the alarm to repeat every 3 hours
-        alarmManager.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            interval,
-            pendingIntent
-        )
-    }
-//works
-private fun scheduleMealReminders() {
-    val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-    // Check if we are on API level 31 or higher to handle exact alarms permission
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (!alarmManager.canScheduleExactAlarms()) {
-            // Request permission to schedule exact alarms
-            requestExactAlarmPermission()
-            return
-        }
-    }
-
-    // Proceed to schedule meal reminders if permission is granted
-    val intent = Intent(this, MealReminderReceiver::class.java)
-    val mealTimes = listOf(8, 12, 18) // 8 AM, 12 PM, and 6 PM
-
-    for (hour in mealTimes) {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-
-
-            // If the time is before the current time, set for the next day
-            if (timeInMillis < System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
-            }
-            Log.d("Meal Reminder", "Scheduling Meals for: ${hour}:00")
-
+        } else {
+            // Optionally, you can show a message to the user explaining why the permission is needed
+            Toast.makeText(this, "Permission needed to schedule reminders", Toast.LENGTH_SHORT).show()
         }
 
-        val pendingIntent = PendingIntent.getBroadcast(this, hour, intent, PendingIntent.FLAG_IMMUTABLE)
-
-        // Schedule the exact alarm
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
     }
-}
-
-
-    private fun isAlarmSet(context: Context, requestCode: Int): Boolean {
-        val intent = Intent(context, HydrationReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent,
-            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
-        return pendingIntent != null
-    }
-
 
 
     private fun setupBottomNavigation() {
@@ -337,105 +187,31 @@ private fun scheduleMealReminders() {
         bottomSheetDialog.setContentView(view)
 
         // Handle the click on the weight layout
-        val weightLayout = view.findViewById<TextView>(R.id.weightlayout)
+        val weightLayout =  view.findViewById<TextView>(R.id.weightlayout)
         val inputCalories = view.findViewById<TextView>(R.id.NutritionLayout)
+
         weightLayout.setOnClickListener {
-            val intent = Intent(this, TrackWeightActivity::class.java)
-            startActivity(intent)
-            true
+            showTaskFragment()  // Call the function to show the TaskFragment
+            bottomSheetDialog.dismiss() // Optionally dismiss the dialog
         }
 
         inputCalories.setOnClickListener {
             val intent = Intent(this, NutritionActivity::class.java)
             startActivity(intent)
-            true
         }
+
+
 
         // Set transparent background if needed
         bottomSheetDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
         bottomSheetDialog.show()
     }
-
-
-    private fun loadWeightData() {
-        val userId = auth.currentUser?.uid
-
-        if (userId != null) {
-            database.child("WeightData")
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val weightEntries = ArrayList<Entry>()
-                        var index = 0f
-
-                        // Check if data exists
-                        if (snapshot.exists()) {
-                            for (weightSnapshot in snapshot.children) {
-                                val weight = weightSnapshot.child("weight").getValue(String::class.java)
-                                    ?.toFloatOrNull()
-
-                                if (weight != null) {
-                                    weightEntries.add(Entry(index++, weight))
-                                }
-                            }
-
-                            // Check if entries are not empty
-                            if (weightEntries.isNotEmpty()) {
-                                val lineDataSet = LineDataSet(weightEntries, "Weight Progress").apply {
-                                    color = ContextCompat.getColor(this@HomeActivity, R.color.my_primary) // Custom line color
-                                    circleColors = listOf(ContextCompat.getColor(this@HomeActivity, R.color.purple_500)) // Circle color for points
-                                    lineWidth = 3f // Line thickness
-                                    circleRadius = 6f // Radius of circle indicators
-                                    valueTextColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // Value text color
-                                    valueTextSize = 12f // Size of value text
-                                    mode = LineDataSet.Mode.CUBIC_BEZIER // Smooth line
-                                    setDrawFilled(true) // Fill under the line
-                                    fillColor = ContextCompat.getColor(this@HomeActivity, R.color.purple_200) // Fill color
-                                }
-
-                                val lineData = LineData(lineDataSet)
-                                binding.lineChart.data = lineData
-
-                                // Customize chart appearance
-                                with(binding.lineChart) {
-                                    description.isEnabled = false // Disable default description
-                                    setBackgroundColor(Color.WHITE) // Chart background color
-                                    setDrawGridBackground(false) // Disable grid background
-                                    axisLeft.apply {
-                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // Left axis text color
-                                        axisMinimum = 0f // Minimum value on Y-axis
-                                        granularity = 1f // Granularity for Y-axis labels
-
-                                    }
-                                    axisRight.isEnabled = false // Disable right axis
-                                    xAxis.apply {
-                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black) // X-axis text color
-                                        position = XAxis.XAxisPosition.BOTTOM // Position of the X-axis
-                                        setDrawGridLines(false) // Disable grid lines
-                                        granularity = 1f // Set X-axis granularity
-                                        xAxis.isEnabled = false
-                                    }
-
-                                    animateXY(1000, 1000) // Animation for chart data loading
-                                    invalidate() // Refresh the chart
-                                }
-                            } else {
-                                binding.lineChart.clear()
-                                Toast.makeText(this@HomeActivity, "No weight data available", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            binding.lineChart.clear()
-                            Toast.makeText(this@HomeActivity, "No data found", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        // Handle error
-                        Toast.makeText(this@HomeActivity, "Error loading data", Toast.LENGTH_SHORT).show()
-                    }
-                })
-        }
+    private fun showTaskFragment() {
+        val taskFragment = WeightFragment()
+        taskFragment.show(supportFragmentManager, "newTaskTag")
     }
+
+
 
 
     private fun showToast(message: String) {
@@ -538,55 +314,69 @@ private fun scheduleMealReminders() {
         }
     }
 
+    // Show the dialog to request exact alarm permissions
+    private fun showExactAlarmPermissionDialog() {
+        // Inflate the custom layout
+        val dialogView = layoutInflater.inflate(R.layout.dialog_permission_request, null)
+
+        // Create and configure the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        // Set click listener for the "No" button
+        dialogView.findViewById<Button>(R.id.button_no).setOnClickListener {
+            dialog.dismiss()  // Close the dialog without doing anything
+        }
+
+        // Set click listener for the "Yes" button
+        dialogView.findViewById<Button>(R.id.button_yes).setOnClickListener {
+            dialog.dismiss()  // Close the dialog
+            requestExactAlarmPermission()  // Navigate to settings to request permission
+        }
+
+        dialog.show()  // Display the dialog
+    }
+
+    // Request exact alarm permission
     private fun requestExactAlarmPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Inflate the custom layout
-            val dialogView = layoutInflater.inflate(R.layout.dialog_permission_request, null)
-
-            // Create the AlertDialog with the custom view
-            val alertDialog = AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setCancelable(true)  // Allow dismissing by tapping outside
-                .create()
-
-            // Find buttons in the custom dialog layout
-            val buttonYes: Button = dialogView.findViewById(R.id.button_yes)
-            val buttonNo: Button = dialogView.findViewById(R.id.button_no)
-
-            // Set button click listeners
-            buttonYes.setOnClickListener {
-                // Direct the user to the app's settings to enable exact alarms
-                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = Uri.parse("package:$packageName")
-                }
-                startActivity(intent)
-                alertDialog.dismiss()
+            val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                data = Uri.parse("package:$packageName")
             }
-
-            buttonNo.setOnClickListener {
-                Toast.makeText(this@HomeActivity, "Exact Alarm Permission Denied", Toast.LENGTH_SHORT).show()
-                alertDialog.dismiss()
-            }
-
-            // Show the dialog
-            alertDialog.show()
+            startActivityForResult(intent, REQUEST_CODE_SCHEDULE_EXACT_ALARM)
         }
     }
 
 
+
+    // Handle the result after the user navigates back from settings
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_SCHEDULE_EXACT_ALARM) {
-            // Check if the permission was granted after returning from settings
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                if (alarmManager.canScheduleExactAlarms()) {
-                    // Permission granted, you can now schedule your alarms
-                    scheduleMealReminders()
-                } else {
-                    Toast.makeText(this, "Exact Alarm Permission Denied", Toast.LENGTH_SHORT).show()
-                }
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
+                // Schedule alarms if permission was granted
+                scheduleHydrationReminder()
+                checkCalorieGoal()
+                scheduleDailyMotivationalQuote()
+                scheduleMealReminders()
+            } else {
+                Toast.makeText(this, "Exact Alarm Permission Denied", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun checkAndRequestAlarmPermission() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            showExactAlarmPermissionDialog()
+        } else {
+            // Schedule the reminders directly if permission is already granted
+            scheduleMealReminders()
+            scheduleHydrationReminder()
+            scheduleDailyMotivationalQuote()
         }
     }
 
@@ -616,8 +406,7 @@ private fun scheduleMealReminders() {
                     NOTIFICATION_PERMISSION_REQUEST_CODE
                 )
             } else {
-                // Permission is already granted, you can proceed to send notifications
-                Toast.makeText(this, "Notification Permission Already Granted", Toast.LENGTH_SHORT).show()
+
             }
         }
     }
@@ -663,6 +452,15 @@ private fun scheduleMealReminders() {
 
         // Sync unsynced weights with Firestore
         weightViewModel.syncUnsyncedWeights()
+
+        // Check if the language has changed
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val newLang = sharedPref.getString("language", Locale.getDefault().language)
+
+        if (newLang != currentLang) {
+            currentLang = newLang
+            recreate() // Only recreate if the language has changed
+        }
     }
 
 
@@ -1036,11 +834,293 @@ private fun scheduleMealReminders() {
         }
     }
 
+    //go up 3 hours
+    //method to schedule hydration reminders
+    private fun scheduleHydrationReminder() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, HydrationReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_IMMUTABLE)
 
+        // Set a 2-hour interval for hydration reminders
+        val triggerTime = System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR * 2
+        Log.d("Hydration Reminder", "Scheduling hydration reminder at ${Date(triggerTime)}")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+    }
+    // method to compare and see if user exceeded 80% of calorie goal intake
+    private fun checkCalorieGoal() {
+        val currentDate = getCurrentDate()
+
+        // Reference to user's goals and nutritional info in Firebase
+        val calorieGoalRef = database.child("goals").child("calorieGoal")
+        val nutritionalInfoRef = database.child("nutritionalInfo").child(currentDate)
+
+        // Fetch calorie goal
+        calorieGoalRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Get calorie goal as Double, handling potential format inconsistencies
+                val calorieGoal = try {
+                    snapshot.getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+                } catch (e: Exception) {
+                    snapshot.getValue(Double::class.java) ?: 0.0
+                }
+
+                // Fetch calories consumed for the current date
+                nutritionalInfoRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        var totalCalories = 0.0
+
+                        if (snapshot.exists()) {
+                            // Loop through each meal and sum the calories
+                            for (mealSnapshot in snapshot.children) {
+                                for (entrySnapshot in mealSnapshot.children) {
+                                    val calories = try {
+                                        entrySnapshot.child("calories").getValue(String::class.java)?.toDoubleOrNull() ?: 0.0
+                                    } catch (e: Exception) {
+                                        entrySnapshot.child("calories").getValue(Double::class.java) ?: 0.0
+                                    }
+                                    totalCalories += calories
+                                }
+                            }
+
+                            // Debug logging for verification
+                            Log.d("CalorieCheck", "Total Calories: $totalCalories, Calorie Goal: $calorieGoal, 80% Goal: ${0.8 * calorieGoal}")
+
+                            // Send notification if 80% of the goal is reached
+                            if (totalCalories >= 0.8 * calorieGoal && calorieGoal > 0) {
+                                NotificationUtils.sendNotification(
+                                    this@HomeActivity,
+                                    "Calorie Alert",
+                                    "You've reached 80% of your daily calorie goal!"
+                                )
+                            }
+                        } else {
+                            Log.d("CalorieCheck", "No nutritional data found for the current date.")
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("CalorieCheck", "Failed to read nutritional data: ${error.message}")
+                    }
+                })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("CalorieGoal", "Failed to read calorie goal: ${error.message}")
+            }
+        })
+    }
+
+    //go up 4 hours
+    //method to schedule daily motivational quotes
+    private fun scheduleDailyMotivationalQuote() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, MotivationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 2, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // Set a 3-hour interval for motivational quote reminders
+        val triggerTime = System.currentTimeMillis() + AlarmManager.INTERVAL_HOUR * 3
+        Log.d("Motivation Reminder", "Scheduling motivational reminder at ${Date(triggerTime)}")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+    }
+
+    //works
+    //method to schedule meal reminders
+    private fun scheduleMealReminders() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        // Check for exact alarm permission on Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // Request exact alarm permission if needed
+                requestExactAlarmPermission()
+                return
+            }
+        }
+
+        val intent = Intent(this, MealReminderReceiver::class.java)
+        // Meal times: 8 AM, 12 PM, and 6 PM
+        val mealTimes = listOf(8, 12, 18)
+
+        for (hour in mealTimes) {
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+
+                // If the time has already passed, schedule for the next day
+                if (timeInMillis < System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            val pendingIntent = PendingIntent.getBroadcast(this, hour, intent, PendingIntent.FLAG_IMMUTABLE)
+
+            // Schedule the exact alarm to work even while idle
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+
+            Log.d("MealReminder", "Scheduled meal reminder for ${calendar.time}")
+        }
+    }
+
+    // Check if alarms are set and request permissions if not allowed
+    private fun checkExactAlarmPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // Show dialog if permission is not granted
+                showExactAlarmPermissionDialog()
+                // Return false if permission is not granted
+                return false
+            } else {
+                // Return true if permission is granted
+                return true
+            }
+        }
+        // Permission is not needed for older versions
+        return true
+    }
+
+
+    private fun loadWeightData() {
+        // Get the ID of the currently authenticated user
+        val userId = auth.currentUser?.uid
+        // Check if user ID is valid (user is logged in)
+        if (userId != null) {
+            // Access the Firebase database for weight data
+            database.child("WeightData")
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        // List to store weight entries for chart
+                        val weightEntries = ArrayList<Entry>()
+                        // Index counter for each weight entry
+                        var index = 0f
+
+                        try {
+                            // Check if any weight data exists in the snapshot
+                        if (snapshot.exists()) {
+                            for (weightSnapshot in snapshot.children) {
+                                // Retrieve weight value and convert to Float
+                                val weight = weightSnapshot.child("weight").getValue(String::class.java)
+                                    ?.toFloatOrNull()
+                                // If weight is valid, add to weight entries
+                                if (weight != null) {
+                                    weightEntries.add(Entry(index++, weight))
+                                }
+                            }
+
+                            // If weight entries are available, configure the chart
+                            if (weightEntries.isNotEmpty()) {
+                                // Configure LineDataSet for weight progress chart
+                                val lineDataSet = LineDataSet(weightEntries, "Weight Progress").apply {
+                                    // Custom line color
+                                    color = ContextCompat.getColor(this@HomeActivity, R.color.my_primary)
+                                    // Circle color for points
+                                    circleColors = listOf(ContextCompat.getColor(this@HomeActivity, R.color.purple_500))
+                                    // Line thickness
+                                    lineWidth = 3f
+                                    // Radius of circle indicators
+                                    circleRadius = 6f
+                                    // Value text color
+                                    valueTextColor = ContextCompat.getColor(this@HomeActivity, R.color.black)
+                                    // Size of value text
+                                    valueTextSize = 12f
+                                    // Smooth line
+                                    mode = LineDataSet.Mode.CUBIC_BEZIER
+                                    // Fill under the line
+                                    setDrawFilled(true)
+                                    // Fill color
+                                    fillColor = ContextCompat.getColor(this@HomeActivity, R.color.purple_200)
+                                }
+                                // Create LineData from the LineDataSet and set it to the chart
+                                val lineData = LineData(lineDataSet)
+                                binding.lineChart.data = lineData
+
+                                // Customize chart appearance
+                                with(binding.lineChart) {
+                                    // Disable default description
+                                    description.isEnabled = false
+                                    // Chart background color
+                                    setBackgroundColor(Color.WHITE)
+                                    // Disable grid background
+                                    setDrawGridBackground(false)
+                                    axisLeft.apply {
+                                        // Left axis text color
+                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black)
+                                        // Minimum value on Y-axis
+                                        axisMinimum = 0f
+                                        // Granularity for Y-axis labels
+                                        granularity = 1f
+
+                                    }
+                                    // Disable right axis
+                                    axisRight.isEnabled = false
+                                    xAxis.apply {
+                                        // X-axis text color
+                                        textColor = ContextCompat.getColor(this@HomeActivity, R.color.black)
+                                        // Position of the X-axis
+                                        position = XAxis.XAxisPosition.BOTTOM
+                                        // Disable grid lines
+                                        setDrawGridLines(false)
+                                        // Set X-axis granularity
+                                        granularity = 1f
+                                        xAxis.isEnabled = false
+                                    }
+                                    // Animation for chart data loading
+                                    animateXY(1000, 1000)
+                                    // Refresh the chart
+                                    invalidate()
+                                }
+                            } else {
+                                binding.lineChart.clear()
+                                Toast.makeText(this@HomeActivity, "No weight data available", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            binding.lineChart.clear()
+                            Toast.makeText(this@HomeActivity, "No data found", Toast.LENGTH_SHORT).show()
+                        }
+                        } catch (e: Exception) {
+                            // Catch any unexpected errors during data processing
+                            Toast.makeText(this@HomeActivity, "Error processing data: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    override fun onCancelled(error: DatabaseError) {
+                        // Handle error
+                        Toast.makeText(this@HomeActivity, "Error loading data", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
+    }
+
+    //method to check if alarms had being set
+    private fun isAlarmSet(context: Context, requestCode: Int): Boolean {
+        val intent = Intent(context, HydrationReminderReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
+        return pendingIntent != null
+    }
 
     private fun getCurrentDate(): String {
         // Format the current date as yyyy-MM-dd
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date()) // Returns current date
+        // Returns current date
+        return dateFormat.format(Date())
     }
+
+
+
 }

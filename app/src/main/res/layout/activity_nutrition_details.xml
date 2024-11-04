@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:titleTextColor="@color/white"
-            app:title="Daily Nutrient Intake Summary"
+            app:title="@string/daily_nutrient_intake_summary"
             app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
             android:background="@color/purple_500"/>
     </com.google.android.material.appbar.AppBarLayout>

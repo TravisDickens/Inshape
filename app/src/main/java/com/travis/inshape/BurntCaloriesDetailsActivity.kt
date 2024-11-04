@@ -10,6 +10,8 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.IValueFormatter
+import com.github.mikephil.charting.utils.ViewPortHandler
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -246,6 +249,8 @@ class BurntCaloriesDetailsActivity : Base() {
         }
 
         val lineData = LineData(dataSet)
+        // Use the custom IntValueFormatter for integer values
+        lineData.setValueFormatter(IntValueFormatter())
 
         // Customize the chart appearance
         lineChart.apply {
@@ -280,4 +285,5 @@ class BurntCaloriesDetailsActivity : Base() {
             animateX(1000) // Animation duration in milliseconds
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.travis.inshape
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -8,6 +9,7 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -28,7 +30,7 @@ import com.travis.inshape.databinding.ActivitySettingsBinding
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : Base() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var auth: FirebaseAuth
@@ -74,9 +76,7 @@ class SettingsActivity : AppCompatActivity() {
         spinner.setSelection(selectedPosition)
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>, view: View?, position: Int, id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedLang = when (position) {
                     0 -> "en"
                     1 -> "af"
@@ -84,14 +84,19 @@ class SettingsActivity : AppCompatActivity() {
                     else -> "en"
                 }
                 // Save the selected language to SharedPreferences
-                sharedPreferences.edit().putString("language", selectedLang).apply()
-                setLocale(selectedLang)
+                if (selectedLang != currantLang) {
+                    sharedPreferences.edit().putString("language", selectedLang).apply()
+                    setLocale(selectedLang) // This will update the language
+                    currantLang = selectedLang
+
+                    // Optionally, show a dialog to restart the app
+                    Toast.makeText(this@SettingsActivity, "Language changed to $selectedLang", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
                 // Do nothing
             }
-
         }
             // Initialize FirebaseAuth
         auth = FirebaseAuth.getInstance()
@@ -174,6 +179,13 @@ class SettingsActivity : AppCompatActivity() {
         if (lang != currantLang) {
             currantLang = lang
 
+            // Store the selected language in SharedPreferences
+            val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putString("language", lang)
+                apply()
+            }
+
             val locale = Locale(lang)
             Locale.setDefault(locale)
             val config = Configuration()
@@ -200,41 +212,50 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun saveUserGoals() {
+        // Get the currently logged-in user
         val currentUser = auth.currentUser
-
+        // Check if user is logged in
         if (currentUser != null) {
+            // Retrieve and trim input values for step, water, and calorie goals
             val stepGoal = binding.stepsGoalInput.text.toString().trim()
             val waterGoal = binding.waterGoalInput.text.toString().trim()
             val calorieGoal = binding.calorieGoalInput.text.toString().trim()
-
+            // Ensure all fields are filled out before proceeding
             if (stepGoal.isEmpty() || waterGoal.isEmpty() || calorieGoal.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return
             }
-
+            // Map user goals for Firebase structure
             val userGoals = mapOf(
                 "stepGoal" to stepGoal,
                 "waterGoal" to waterGoal,
                 "calorieGoal" to calorieGoal
             )
 
-            // Save to Firebase
+            // Save goals to Firebase under the user's node
             database.child("users").child(currentUser.uid).child("goals")
                 .setValue(userGoals)
                 .addOnSuccessListener {
+                    // Show confirmation on successful Firebase save
                     Toast.makeText(this, "Goals saved to Firebase", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { error ->
+                    // Handle failure in saving to Firebase
                     Toast.makeText(this, "Failed to save goals: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
-
-            // Save locally to Room database
-            val goal = Goal(stepGoal = stepGoal, waterGoal = waterGoal, calorieGoal = calorieGoal)
-            lifecycleScope.launch {
-                GoalDatabase.getDatabase(this@SettingsActivity).goalDao().insertGoal(goal)
-                Toast.makeText(this@SettingsActivity, "Goals saved locally", Toast.LENGTH_SHORT).show() // Local storage toast
+            // Check if app is offline
+            if (!isOnline()) {
+                // Save goals locally in Room database if offline
+                val goal =
+                    Goal(stepGoal = stepGoal, waterGoal = waterGoal, calorieGoal = calorieGoal)
+                lifecycleScope.launch {
+                    GoalDatabase.getDatabase(this@SettingsActivity).goalDao().insertGoal(goal)
+                    // Show confirmation for local storage save
+                    Toast.makeText(this@SettingsActivity, "Goals saved locally", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
+            // Notify if no user is logged in
             Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
         }
     }
@@ -242,36 +263,40 @@ class SettingsActivity : AppCompatActivity() {
 
 
     private fun loadUserGoals() {
+        // Get the currently logged-in user
         val currentUser = auth.currentUser
-
+        // Check if user is logged in
         if (currentUser != null) {
             // Check if the app is online
             if (isOnline()) {
-                // Fetch from Firebase
+                // Reference to user's goals in Firebase
                 val userGoalsRef = database.child("users").child(currentUser.uid).child("goals")
-
+                // Add listener to fetch data from Firebase
                 userGoalsRef.addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
+                            // Retrieve step, water, and calorie goals from Firebase
                             val stepGoal = snapshot.child("stepGoal").getValue(String::class.java)
                             val waterGoal = snapshot.child("waterGoal").getValue(String::class.java)
                             val calorieGoal = snapshot.child("calorieGoal").getValue(String::class.java)
-
+                            // Populate input fields with retrieved data
                             binding.stepsGoalInput.setText(stepGoal ?: "")
                             binding.waterGoalInput.setText(waterGoal ?: "")
                             binding.calorieGoalInput.setText(calorieGoal ?: "")
 
-                            // Save to Room DB
+                            // Save fetched goals to Room database for offline access
                             val goal = Goal(stepGoal = stepGoal ?: "", waterGoal = waterGoal ?: "", calorieGoal = calorieGoal ?: "")
                             lifecycleScope.launch {
                                 GoalDatabase.getDatabase(this@SettingsActivity).goalDao().insertGoal(goal)
                             }
                         } else {
+                            // Notify if no goals are found in Firebase
                             Toast.makeText(this@SettingsActivity, "No goals found", Toast.LENGTH_SHORT).show()
                         }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        // Notify and log Firebase loading error
                         Toast.makeText(this@SettingsActivity, "Failed to load goals: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
                 })
@@ -330,6 +355,7 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }.addOnFailureListener { error ->
                 Toast.makeText(this, "Failed to upload image: ${error.message}", Toast.LENGTH_SHORT).show()
+                Log.d("Profile image","Failed to upload image: ${error.message}")
             }
         } else {
             Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
@@ -373,15 +399,15 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
     private fun isOnline(): Boolean {
+        // Check network connectivity to determine if app is online
         val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         return activeNetwork != null && activeNetwork.isConnected
     }
-    override fun onBackPressed() {
-        // Call the super method to ensure proper back button behavior
-        super.onBackPressed()
 
-        // You can add additional logic here if needed, like saving other preferences
-        finish() // Finish the activity when back is pressed
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Finish the activity when back is pressed
+        finish()
     }
 }

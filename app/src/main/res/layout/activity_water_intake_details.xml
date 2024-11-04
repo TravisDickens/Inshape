@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:titleTextColor="@color/white"
-        app:title="Water Intake Details"
+        app:title="@string/water_intake_details"
         app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
         android:background="@color/purple_500"/>
   </com.google.android.material.appbar.AppBarLayout>
